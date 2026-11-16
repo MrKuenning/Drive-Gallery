@@ -1,7 +1,7 @@
 # Drive Photo & Video Gallery
 
 <p align="center">
-  <img src="Drive/.gallery-app/assets/icon.png" width="160" height="160" alt="Drive Photo & Video Gallery Icon" />
+  <img src="DRIVE_ROOT/.gallery-app/assets/icon.png" width="160" height="160" alt="Drive Photo & Video Gallery Icon" />
 </p>
 
 A standalone, portable photo and home video gallery designed for thumbdrives and external media drives. Works instantly on Windows, macOS, and Linux with **zero installation** and **100% offline privacy**.
