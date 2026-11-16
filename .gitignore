@@ -2,16 +2,16 @@
 test flas drive
 
 # Example Drive media & generated gallery cache
-Drive/Your Media Folders/*
-Drive/Any Quantity Any Name/*
-Drive/.gallery-app/thumbs/*
-Drive/.gallery-app/avatars/*
-
-Drive/.gallery-app/gallery_data.js
-Drive/.gallery-app/Test-Flash-Drive/
+DRIVE_ROOT/Your Media Folders/*
+DRIVE_ROOT/Any Quantity Any Name/*
+DRIVE_ROOT/.gallery-app/thumbs/*
+DRIVE_ROOT/.gallery-app/avatars/*
+DRIVE_ROOT/Test Media
+DRIVE_ROOT/.gallery-app/gallery_data.js
+Releases
 
 # Compiled executables (distributed via GitHub Releases)
-drive/.gallery-app/*.exe
+DRIVE_ROOT/.gallery-app/*.exe
 
 
 # Python virtual environment

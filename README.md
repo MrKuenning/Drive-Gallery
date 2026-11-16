@@ -6,7 +6,7 @@
 
 A standalone, portable photo and home video gallery designed for thumbdrives and external media drives. Works instantly on Windows, macOS, and Linux with **zero installation** and **100% offline privacy**.
 
-![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.4-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![Pillow](https://img.shields.io/badge/Imaging-Pillow-green)
 ![pyexiv2](https://img.shields.io/badge/Metadata-pyexiv2-orange)

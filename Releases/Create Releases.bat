@@ -24,7 +24,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-for %%I in ("%~dp0..\Drive\.gallery-app") do set "APP_DIR=%%~fI"
+for %%I in ("%~dp0..\DRIVE_ROOT\.gallery-app") do set "APP_DIR=%%~fI"
 
 if not exist "%APP_DIR%\build_gallery.py" (
     echo [!] Error: Could not find "%APP_DIR%\build_gallery.py"
@@ -80,7 +80,7 @@ echo ==============================================================
 echo   [OK] Build Complete!
 echo   Updated:
 echo     - Releases\Create Gallery.exe
-echo     - Drive\.gallery-app\build_gallery.exe
+echo     - DRIVE_ROOT\.gallery-app\build_gallery.exe
 echo ==============================================================
 echo.
 pause
