@@ -109,30 +109,29 @@ If you add new photos or videos, rename folders, or drop custom portraits into `
 
 ## ⚡ Creating a Drive Gallery on a New USB Drive (1-File Setup)
 
-You can easily turn **any** USB thumbdrive or media folder into a Drive Gallery by dropping just **a single file** onto the drive root:
+You can turn **any** USB thumbdrive or media folder into a Drive Gallery by downloading a single file from **[GitHub Releases](../../releases)** and dropping it onto the drive root:
 
-### Option A: Standalone Windows Executable (No Python Needed)
-1. Copy **`.gallery-app/Create Gallery.exe`** to the root of the new drive.
-2. Double-click **`Create Gallery.exe`**.
-3. A friendly, color-coded confirmation screen will appear:
+### Option A: `Create.Gallery.exe` (Windows — No Python Needed)
+1. Download **`Create.Gallery.exe`** from **[GitHub Releases](../../releases)** and copy it to the root of your drive.
+2. Double-click **`Create.Gallery.exe`**.
+3. A confirmation screen will appear:
    * Explains that it will create a safe photo gallery in `.gallery-app` to easily view your media.
    * Confirms that it will **not touch or modify your media files**.
    * Shows the detected media folders on the drive.
-4. Hit **Enter** (or type `y`). The `.exe` automatically:
+4. Hit **Enter** (or type `y`). It automatically:
    * Creates the `.gallery-app/` structure.
    * Extracts `Open Gallery.html`, launchers (`Open Gallery (Windows).bat` / `Open Gallery (Mac).command`), and `autorun.inf`.
-   * Unpacks official logos (`favicon.png`, `app_icon.png`) and auto-generates multi-resolution icons (`drive_icon.ico`, `app_icon.ico`).
+   * Unpacks `.gallery-app/assets/icon.png` and generates `.gallery-app/assets/drive_icon.ico`.
    * **Installs BOTH** `.gallery-app/build_gallery.exe` and `.gallery-app/build_gallery.py` inside `.gallery-app/`.
-   * Configures `build_gallery.bat` so future updates work without Python.
    * Indexes all photos and videos on the drive and launches the gallery in your browser!
-   * *Tip: Once setup completes, you can safely delete `Create Gallery.exe` from the drive root to keep the root clean.*
+   * *Once setup completes, it will let you know it is safe to delete `Create.Gallery.exe` from the drive root.*
 
-### Option B: Cross-Platform Python Script (Self-Bootstrapping)
-1. Copy **`.gallery-app/build_gallery.py`** to the root of the new drive.
-2. Run `python build_gallery.py`.
-3. Press **Enter** on the reassuring confirmation screen.
-   * `build_gallery.py` is **100% self-contained**: it carries embedded base64 payloads of the gallery web app and favicon.
-   * It extracts all HTML, scripts, and logos, generates multi-resolution ICO files, and indexes your media without needing any companion files or internet access!
+### Option B: `Create.Gallery.py` (Cross-Platform Python — Windows / macOS / Linux)
+1. Download **`Create.Gallery.py`** from **[GitHub Releases](../../releases)** (or copy `DRIVE_ROOT/.gallery-app/build_gallery.py`) to the root of your drive.
+2. Run `python Create.Gallery.py`.
+3. Press **Enter** on the confirmation screen.
+   * `Create.Gallery.py` is **100% self-contained**: it carries embedded base64 payloads of `Open Gallery.html` and `assets/icon.png`.
+   * It sets up `.gallery-app/`, indexes your media, copies itself to `.gallery-app/build_gallery.py`, and automatically removes itself from the drive root once the gallery is built!
 
 ---
 
