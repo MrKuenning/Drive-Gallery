@@ -1,0 +1,3901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drive Photo & Video Gallery</title>
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <style>
+    :root {
+      --bg: #0c0e12;
+      --surface: #151821;
+      --surface-subtle: #1c212d;
+      --surface-hover: #242b3a;
+      --border: #262e3d;
+      --border-subtle: rgba(255,255,255,0.06);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --card-size: 220px;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- Top Main Header --- */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 22px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .header-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      user-select: none;
+    }
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .brand svg { width: 22px; height: 22px; fill: var(--primary); }
+    .brand-version {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Top Nav Links (Timeline, Folders, People, Tags) */
+    .top-nav {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-subtle);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 13px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .nav-tab:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.04);
+    }
+    .nav-tab.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .nav-badge {
+      background: rgba(255,255,255,0.15);
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+    .nav-tab.active .nav-badge {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Search Box */
+    .search-box {
+      flex: 1;
+      max-width: 280px;
+      min-width: 150px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px 6px 32px;
+      border-radius: 18px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    .search-box svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      fill: var(--text-muted);
+    }
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 15px;
+      display: none;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Controls: Sort, Square/Full & Size */
+    .view-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+    .toggle-group {
+      display: inline-flex;
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 2px;
+      border: 1px solid var(--border);
+    }
+    .toggle-opt {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 3px 8px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .toggle-opt.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 7px;
+    }
+    .slider-wrap input[type=range] {
+      width: 120px;
+      height: 6px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+    }
+    .slider-wrap input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s;
+    }
+    .slider-wrap input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .slider-wrap input[type=range]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-icon {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover, .btn-icon.active {
+      background: var(--surface-hover);
+      color: #fff;
+      border-color: #475569;
+    }
+    .btn-icon.active {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    /* --- Active Filter Bar --- */
+    #filterBar {
+      display: none;
+      background: rgba(37, 99, 235, 0.12);
+      padding: 8px 20px;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.35);
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    #filterBar.visible { display: flex; }
+    .filter-label {
+      font-size: 0.76rem;
+      color: #93c5fd;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .filter-chip {
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .filter-chip button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .filter-chip button:hover {
+      background: rgba(255,255,255,0.35);
+    }
+    .clear-all-link {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .clear-all-link:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    /* --- App Body Layout --- */
+    .app-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* --- Left Sidebar (Folders Tree) --- */
+    .left-panel {
+      width: 270px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: width 0.2s ease;
+      z-index: 10;
+    }
+    .left-panel.hidden { display: none; }
+    .panel-title-bar {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      background: var(--surface-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    /* Folder Tree */
+    .tree-node { margin-bottom: 2px; user-select: none; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tree-row:hover { background: var(--surface-hover); color: #fff; }
+    .tree-row.selected {
+      background: rgba(59, 130, 246, 0.18);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .tree-expander {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .tree-expander:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .tree-expander.empty { visibility: hidden; }
+    .tree-icon { font-size: 14px; flex-shrink: 0; }
+    .tree-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tree-badge {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+    .tree-row.selected .tree-badge { background: var(--primary); color: #fff; }
+    .tree-children {
+      margin-left: 16px;
+      border-left: 1px dashed var(--border);
+      padding-left: 4px;
+    }
+    .tree-children.collapsed { display: none; }
+
+    .tree-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.4);
+      border-bottom: 1px solid var(--border);
+      gap: 6px;
+    }
+    .tree-tool-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .tree-tool-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: #475569;
+    }
+
+    /* --- Dynamic Google-Photos Style Timeline Scrubber (Left side of Timeline) --- */
+    .timeline-rail {
+      width: 76px;
+      background: transparent;
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      flex-shrink: 0;
+      overflow-y: auto;
+      user-select: none;
+      opacity: 0.85;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .timeline-rail:hover {
+      opacity: 1;
+      background: rgba(21, 24, 33, 0.6);
+    }
+    /* Decades Hierarchy Scrubber */
+    .rail-decade-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+    .rail-decade-node {
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .rail-decade-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #94a3b8;
+      letter-spacing: 0.03em;
+    }
+    .rail-decade-indicator {
+      width: 16px;
+      height: 2px;
+      background: var(--border);
+      margin-top: 3px;
+      border-radius: 1px;
+      transition: all 0.15s;
+    }
+    .rail-decade-node:hover {
+      background: rgba(255,255,255,0.06);
+    }
+    .rail-decade-node:hover .rail-decade-label {
+      color: #fff;
+    }
+    .rail-decade-group.active .rail-decade-node {
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(59, 130, 246, 0.45);
+    }
+    .rail-decade-group.active .rail-decade-node .rail-decade-label {
+      color: #60a5fa;
+      font-weight: 800;
+    }
+    .rail-decade-group.active .rail-decade-indicator {
+      background: #3b82f6;
+      width: 26px;
+    }
+
+    /* Years Container inside Decade (Collapsed unless decade is active!) */
+    .rail-years-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      width: 100%;
+    }
+    .rail-decade-group.active .rail-years-container {
+      display: flex;
+    }
+
+    /* Year Group */
+    .rail-year-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .rail-year-node {
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .rail-year-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+    .rail-year-node:hover .rail-year-label {
+      color: #fff;
+    }
+    .rail-year-group.active .rail-year-node {
+      background: var(--primary);
+    }
+    .rail-year-group.active .rail-year-node .rail-year-label {
+      color: #fff;
+      font-weight: 700;
+    }
+    .rail-tick {
+      width: 2px;
+      height: 6px;
+      background: var(--border);
+      margin-top: 2px;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .rail-year-group.active .rail-tick {
+      background: var(--primary);
+    }
+
+    /* Granular Month Sub-Items: ONLY expanded for the current active/viewed year! */
+    .rail-months-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      width: 100%;
+    }
+    .rail-year-group.active .rail-months-container {
+      display: flex;
+    }
+    .rail-month-item {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 1px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .rail-month-item:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+    }
+    .rail-month-item.active {
+      color: #fff;
+      font-weight: 700;
+      background: rgba(59, 130, 246, 0.35);
+    }
+    .rail-month-item.active::before {
+      content: "•";
+      color: var(--primary);
+      font-size: 9px;
+    }
+
+    /* --- Center Main Gallery Area --- */
+    .main-viewport {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--bg);
+      padding: 20px 28px 40px;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    .viewport-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .viewport-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .viewport-count {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* --- Media Grid (Square vs Full Natural Aspect) --- */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-size), 1fr));
+      gap: 14px;
+    }
+
+    /* Mode: Square */
+    .mode-square .media-card { aspect-ratio: 1; }
+    .mode-square .card-img-wrap { width: 100%; height: 100%; }
+    .mode-square .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Mode: Mosaic (Justified Rows) */
+    .mode-mosaic .media-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .mode-mosaic .media-card {
+      aspect-ratio: auto;
+      height: var(--card-size);
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+    .mode-mosaic .card-img-wrap { width: 100%; height: 100%; }
+    .mode-mosaic .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mode-mosaic .media-card:hover img { transform: scale(1.03); }
+
+    .media-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s;
+    }
+    .media-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      border-color: #475569;
+    }
+    .media-card img {
+      display: block;
+      transition: transform 0.25s ease;
+    }
+    .mode-square .media-card:hover img { transform: scale(1.03); }
+
+    .card-badge {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    /* Video Card Overlays (Clean on photos, informative on videos) */
+    .card-video-banner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(10, 15, 29, 0.94) 0%, rgba(10, 15, 29, 0.7) 60%, transparent 100%);
+      padding: 22px 8px 7px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      pointer-events: none;
+      transition: background 0.18s;
+      z-index: 2;
+    }
+    .media-card:hover .card-video-banner {
+      background: linear-gradient(to top, rgba(10, 15, 29, 0.98) 0%, rgba(10, 15, 29, 0.85) 75%, transparent 100%);
+    }
+    .card-video-top-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .card-video-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .card-video-duration {
+      font-size: 0.68rem;
+      color: #e2e8f0;
+      font-variant-numeric: tabular-nums;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .card-video-title {
+      font-size: 0.77rem;
+      font-weight: 600;
+      color: #f8fafc;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+    }
+    .media-card:hover .card-video-title {
+      color: #60a5fa;
+    }
+    .card-people-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      color: #cbd5e1;
+    }
+
+    /* Timeline Section Headers in Main Stream */
+    .timeline-section {
+      margin-bottom: 28px;
+    }
+    .timeline-sec-header {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timeline-sec-count {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+
+    /* --- FULL PAGE VIEWS: People & Tags --- */
+    .fullpage-view {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px 48px;
+      background: var(--bg);
+    }
+    .fullpage-header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+    .fullpage-header h2 { font-size: 1.35rem; font-weight: 700; color: #fff; }
+    .fullpage-header p { font-size: 0.88rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* People Full Page Grid */
+    .people-full-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 18px;
+    }
+    .person-full-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .person-full-card:hover {
+      background: var(--surface-hover);
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .person-full-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 3px solid var(--border);
+      background: var(--surface-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .person-full-card:hover .person-full-avatar { border-color: var(--primary); }
+    .person-full-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .person-full-initial { font-size: 2rem; font-weight: 700; color: var(--primary); }
+    .person-full-name { font-weight: 600; font-size: 0.95rem; color: #fff; margin-bottom: 4px; }
+    .person-full-count { font-size: 0.8rem; color: var(--text-dim); }
+
+    .person-avatar-edit-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.18s;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 600;
+      gap: 2px;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      z-index: 2;
+    }
+    .person-full-card:hover .person-avatar-edit-overlay,
+    .person-full-avatar:hover .person-avatar-edit-overlay {
+      opacity: 1;
+    }
+    .person-avatar-edit-overlay:hover {
+      background: rgba(37, 99, 235, 0.88);
+    }
+
+    .person-change-btn {
+      margin-top: 8px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.18s ease;
+      z-index: 3;
+    }
+    .person-change-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Avatar Picker Modal */
+    #avatarPickerModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 15, 29, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .avatar-modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      animation: modalFadeIn 0.18s ease-out;
+    }
+    .avatar-modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-subtle);
+    }
+    .avatar-modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .avatar-modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .avatar-modal-close:hover { color: #fff; }
+    .avatar-modal-toolbar {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.3);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .avatar-modal-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .avatar-modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .avatar-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .avatar-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .avatar-grid-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+    .avatar-photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+    }
+    .avatar-option-card {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      position: relative;
+      background: var(--surface-subtle);
+      transition: all 0.18s;
+    }
+    .avatar-option-card:hover {
+      border-color: var(--primary);
+      transform: scale(1.04);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    .avatar-option-card.selected {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
+    }
+    .avatar-option-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-option-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.75);
+      color: #e2e8f0;
+      font-size: 0.65rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .avatar-face-tag {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(16, 185, 129, 0.92);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .avatar-crop-hint-badge {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.15s ease-out;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+    .avatar-option-card:hover .avatar-crop-hint-badge {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Interactive Avatar Cropper Modal */
+    #avatarCropModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 15, 29, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 2600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .crop-modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    }
+    .crop-modal-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-subtle);
+    }
+    .crop-modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .crop-stage-container {
+      width: 100%;
+      height: 300px;
+      background: #06080c;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+    }
+    .crop-stage-container:active {
+      cursor: grabbing;
+    }
+    .crop-square-mask {
+      width: 220px;
+      height: 220px;
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.85), 0 0 0 2px var(--primary);
+      position: absolute;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .crop-square-mask::before, .crop-square-mask::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+    .crop-square-mask::before {
+      top: -2px; left: -2px;
+      border-top: 3px solid #60a5fa;
+      border-left: 3px solid #60a5fa;
+      border-top-left-radius: 10px;
+    }
+    .crop-square-mask::after {
+      bottom: -2px; right: -2px;
+      border-bottom: 3px solid #60a5fa;
+      border-right: 3px solid #60a5fa;
+      border-bottom-right-radius: 10px;
+    }
+    .crop-target-img {
+      position: absolute;
+      max-width: none !important;
+      max-height: none !important;
+      pointer-events: none;
+      transform-origin: center center;
+    }
+    .crop-controls {
+      padding: 16px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .crop-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .crop-slider-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+    }
+    .crop-hint {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+    .crop-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .avatar-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .avatar-btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Tags Full Page Cloud */
+    .tags-full-cloud {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+    .cloud-pill {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cloud-pill:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .cloud-pill-count { font-size: 0.74rem; opacity: 0.65; }
+
+    /* --- Right Sidebar (Filter by People / Tags) --- */
+    .right-panel {
+      width: 290px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: width 0.2s ease;
+      z-index: 10;
+    }
+    .right-panel.hidden { display: none; }
+    .right-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-subtle);
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .rt-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .rt-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .side-people-list { display: flex; flex-direction: column; gap: 4px; }
+    .side-person-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .side-person-row:hover { background: var(--surface-hover); }
+    .side-person-row.selected { background: rgba(59, 130, 246, 0.18); }
+    .side-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .side-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .side-avatar span { font-size: 0.85rem; font-weight: 700; color: var(--primary); }
+    .side-pname { font-size: 0.85rem; color: #fff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .side-pcount { font-size: 0.74rem; color: var(--text-dim); }
+
+    .side-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .side-tag {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .side-tag:hover { background: var(--surface-hover); color: #fff; }
+    .side-tag.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .side-tag span { font-size: 0.7rem; opacity: 0.65; margin-left: 4px; }
+
+    /* --- EXPANDED LIGHTBOX (SHADOWBOX) WITH ZOOM & PAN --- */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 9, 0.98);
+      z-index: 1000;
+      flex-direction: column;
+      user-select: none;
+    }
+    .lb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      z-index: 30;
+      flex-shrink: 0;
+    }
+    .lb-title {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      font-weight: 600;
+      max-width: 50vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lb-zoom-badge {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.08);
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: none;
+    }
+    .lb-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .lb-btn:hover {
+      background: rgba(255,255,255,0.24);
+      transform: scale(1.05);
+    }
+
+    /* Lightbox Body (Maximizing visible area) */
+    .lb-body {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      overflow: hidden;
+      cursor: default;
+    }
+    .lb-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .lb-media-target {
+      max-width: 98vw;
+      max-height: 88vh;
+      border-radius: 4px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.9);
+      object-fit: contain;
+      transform-origin: center center;
+      transition: transform 0.08s ease-out;
+      will-change: transform;
+    }
+    .lb-media-target.draggable {
+      cursor: grab;
+    }
+    .lb-media-target.dragging {
+      cursor: grabbing;
+      transition: none !important;
+    }
+
+    /* Full-Height Side Navigation Zones */
+    .lb-nav {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: clamp(64px, 10vw, 140px);
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 32px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.85);
+      transition: background 0.18s ease, color 0.18s ease;
+      z-index: 25;
+      user-select: none;
+    }
+    .lb-nav.prev {
+      left: 0;
+      justify-content: flex-start;
+      padding-left: 22px;
+    }
+    .lb-nav.next {
+      right: 0;
+      justify-content: flex-end;
+      padding-right: 22px;
+    }
+    .lb-nav.prev:hover {
+      background: linear-gradient(to right, rgba(15, 23, 42, 0.55), transparent);
+      color: #fff;
+    }
+    .lb-nav.next:hover {
+      background: linear-gradient(to left, rgba(15, 23, 42, 0.55), transparent);
+      color: #fff;
+    }
+
+    .lb-footer {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 30;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .lb-footer.collapsed {
+      display: none !important;
+    }
+    .lb-floating-pill {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #cbd5e1;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      z-index: 35;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .lb-floating-pill:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .lb-footer-collapse-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-muted);
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .lb-footer-collapse-btn:hover {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+    .lb-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .lb-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      flex-wrap: wrap;
+    }
+    .lb-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .lb-chip {
+      background: rgba(255,255,255,0.1);
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+      cursor: pointer;
+    }
+    .lb-chip:hover, .lb-chip.active-hover { background: var(--primary); color: #fff; }
+
+    /* Lightbox Face Hover Overlay */
+    .lb-media-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 98vw;
+      max-height: 88vh;
+      transition: transform 0.12s ease-out;
+    }
+    .lb-media-wrap.draggable { cursor: grab; }
+    .lb-media-wrap.dragging { cursor: grabbing; transition: none !important; }
+    .lb-faces-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .lb-face-box {
+      position: absolute;
+      pointer-events: auto;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .lb-face-box:hover,
+    .lb-face-box.active {
+      border-color: rgba(59, 130, 246, 0.95);
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.45);
+      z-index: 4;
+    }
+    .lb-face-label {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 6px);
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid rgba(59, 130, 246, 0.85);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+    .lb-face-box.label-top .lb-face-label {
+      top: auto;
+      bottom: calc(100% + 6px);
+    }
+    .lb-face-box:hover .lb-face-label,
+    .lb-face-box.active .lb-face-label {
+      opacity: 1;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #334155;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 2000;
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="brand" onclick="switchNavTab('timeline'); clearAllFilters();">
+      <img src="assets/icon.png" alt="Drive Gallery" class="brand-icon">
+      <span class="brand-version" title="Gallery Build Version">v2.3.0</span>
+    </div>
+
+    <!-- The 5 Main Full Views -->
+    <nav class="top-nav">
+      <button id="navTabTimeline" class="nav-tab active" onclick="switchNavTab('timeline')">
+        <span>📅 Timeline</span>
+        <span class="nav-badge" id="badgeTotal">0</span>
+      </button>
+      <button id="navTabFolders" class="nav-tab" onclick="switchNavTab('folders')">
+        <span>📁 Folders</span>
+        <span class="nav-badge" id="badgeFolders">0</span>
+      </button>
+      <button id="navTabVideos" class="nav-tab" onclick="switchNavTab('videos')">
+        <span>🎬 Videos</span>
+        <span class="nav-badge" id="badgeVideos">0</span>
+      </button>
+      <button id="navTabPeople" class="nav-tab" onclick="switchNavTab('people')">
+        <span>👤 People</span>
+        <span class="nav-badge" id="badgePeople">0</span>
+      </button>
+      <button id="navTabTags" class="nav-tab" onclick="switchNavTab('tags')">
+        <span>🏷️ Tags</span>
+        <span class="nav-badge" id="badgeTags">0</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- CENTER: View Controls (Sort, Aspect Ratio, Size) -->
+  <div class="header-center">
+    <div class="view-controls">
+      <!-- Sort Order Toggle -->
+      <div class="toggle-group" title="Sort Order">
+        <button id="optSortNewest" class="toggle-opt active" onclick="setSortOrder('newest')">⬇ Newest</button>
+        <button id="optSortOldest" class="toggle-opt" onclick="setSortOrder('oldest')">⬆ Oldest</button>
+      </div>
+
+      <!-- Aspect Ratio Toggle -->
+      <div class="toggle-group" title="Thumbnail Aspect Ratio">
+        <button id="optCropSquare" class="toggle-opt" onclick="setCropMode('square')">Square</button>
+        <button id="optCropMosaic" class="toggle-opt active" onclick="setCropMode('mosaic')">Mosaic</button>
+      </div>
+
+      <!-- Size Slider -->
+      <div class="slider-wrap" title="Thumbnail Size">
+        <span>Size</span>
+        <input type="range" id="sizeSlider" min="130" max="600" value="220" oninput="handleSizeChange(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Search, Filter Toggle, Fullscreen -->
+  <div class="header-right">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5Z"/></svg>
+      <input type="text" id="searchInput" placeholder="Search people, tags, files..." oninput="handleSearch(this.value)">
+      <button id="searchClearBtn" class="search-clear" onclick="clearSearch()">&times;</button>
+    </div>
+
+    <!-- Toggle Right Filter Panel (for Timeline and Folders view) -->
+    <button id="toggleFilterPanelBtn" class="btn-icon" title="Toggle People & Tags filter panel" onclick="toggleRightFilterPanel()">
+      <span>👥 Filters</span>
+    </button>
+
+    <!-- Browser Fullscreen Toggle -->
+    <button id="btnAppFullscreen" class="btn-icon" title="Toggle Fullscreen Mode" onclick="toggleFullscreen(event)">
+      <span>⛶ Fullscreen</span>
+    </button>
+  </div>
+</header>
+
+<!-- Filter Chips Bar -->
+<div id="filterBar">
+  <span class="filter-label">🔍 Active Filters:</span>
+  <div id="filterChips" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
+  <button class="clear-all-link" onclick="clearAllFilters()" title="Remove all active filters">✕ Clear Filters</button>
+</div>
+
+<div class="app-body">
+  <!-- 1. LEFT: Google-Photos style Dynamic Timeline Rail (Expands ONLY the currently viewed year!) -->
+  <aside id="timelineRail" class="timeline-rail">
+    <!-- Years/Months dynamic scrubber nodes injected here -->
+  </aside>
+
+  <!-- 2. LEFT: Folder Tree Panel (Shown ONLY on Folders Tab) -->
+  <aside id="folderPanel" class="left-panel hidden">
+    <div class="panel-title-bar">
+      <span>Folders Hierarchy</span>
+      <span style="font-size: 0.76rem; color: var(--text-dim);" id="folderTreeCount"></span>
+    </div>
+    <div class="tree-toolbar">
+      <button class="tree-tool-btn" onclick="expandAllFolders(true)" title="Expand all folders">
+        <span>⊞</span> Expand All
+      </button>
+      <button class="tree-tool-btn" onclick="expandAllFolders(false)" title="Contract all folders">
+        <span>⊟</span> Contract All
+      </button>
+    </div>
+    <div class="panel-scroll-content" id="folderTreeContainer">
+      <!-- Folder tree injected here -->
+    </div>
+  </aside>
+
+  <!-- 3. CENTER: Main Viewport (Timeline list, Folder media grid, People full page, or Tags full page) -->
+  <main class="main-viewport mode-mosaic" id="mainViewport" onscroll="handleViewportScroll()">
+    <div class="viewport-header" id="viewportHeader">
+      <div class="viewport-title" id="viewportTitle">Timeline</div>
+      <div class="viewport-count" id="viewportCount">0 items</div>
+    </div>
+    <div id="viewportContent"></div>
+  </main>
+
+  <!-- 4. RIGHT: Optional Collapsible Filter Sidebar (People & Tags) -->
+  <aside id="rightFilterPanel" class="right-panel hidden">
+    <div class="panel-title-bar">
+      <div class="right-tabs">
+        <button id="rtPeopleBtn" class="rt-btn active" onclick="switchRightTab('people')">👤 People</button>
+        <button id="rtTagsBtn" class="rt-btn" onclick="switchRightTab('tags')">🏷️ Tags</button>
+      </div>
+    </div>
+    <div class="panel-scroll-content" id="rightFilterContent">
+      <!-- People or Tags list injected here -->
+    </div>
+  </aside>
+</div>
+
+<!-- Lightbox Modal (Shadowbox) with Zoom & Pan -->
+<div id="lightbox" tabindex="0">
+  <div class="lb-header">
+    <div id="lbTitle" class="lb-title"></div>
+    <div class="lb-controls">
+      <span id="lbZoomBadge" class="lb-zoom-badge">100%</span>
+      <button class="lb-btn" id="lbResetZoomBtn" title="Reset Zoom" style="display: none;" onclick="resetZoom()">⟲</button>
+      <button class="lb-btn" id="lbFullscreenBtn" title="Toggle Fullscreen (F)" onclick="toggleFullscreen(event)">⛶</button>
+      <button class="lb-btn active" id="lbInfoBtn" title="Toggle Details Panel (I)" onclick="toggleDetails(event)">ℹ</button>
+      <button class="lb-btn" title="Open Original Media" onclick="openOriginalMedia()">↗</button>
+      <button class="lb-btn" title="Close (Esc)" onclick="closeLightbox()">&times;</button>
+    </div>
+  </div>
+
+  <div class="lb-body" id="lbBody">
+    <button class="lb-nav prev" title="Previous (Left Arrow)" onclick="navigateLightbox(-1)">❮</button>
+    <div id="lbContent" class="lb-content"></div>
+    <button class="lb-nav next" title="Next (Right Arrow)" onclick="navigateLightbox(1)">❯</button>
+    <div id="lbFloatingDetailsPill" class="lb-floating-pill" onclick="toggleDetails(event)">
+      <span>▲ Show Details</span>
+    </div>
+  </div>
+
+  <div class="lb-footer" id="lbFooter">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <div class="lb-meta-row">
+        <span id="lbDate"></span>
+        <span>•</span>
+        <span id="lbFolder"></span>
+        <span>•</span>
+        <span id="lbIndex"></span>
+      </div>
+      <button class="lb-footer-collapse-btn" id="lbFooterCollapseBtn" title="Collapse Details Section" onclick="toggleDetails(event)">
+        <span>Hide Details ▼</span>
+      </button>
+    </div>
+    <div id="lbCommentRow" class="lb-meta-row" style="display: none; color: #cbd5e1; font-style: italic; font-size: 0.84rem;">
+      <span id="lbCommentText"></span>
+    </div>
+    <div id="lbPeopleRow" class="lb-meta-row" style="display: none;">
+      <span style="color: #64748b;">People:</span>
+      <div id="lbPeopleChips" class="lb-chips"></div>
+    </div>
+    <div id="lbTagsRow" class="lb-meta-row" style="display: none;">
+      <span style="color: #64748b;">Tags:</span>
+      <div id="lbTagsChips" class="lb-chips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Picker Modal -->
+<div id="avatarPickerModal" onclick="closeAvatarModal(event)">
+  <div class="avatar-modal-box" onclick="event.stopPropagation()">
+    <div class="avatar-modal-header">
+      <div class="avatar-modal-title" id="avatarModalTitle">Choose Avatar</div>
+      <button class="avatar-modal-close" onclick="closeAvatarModal()" title="Close">&times;</button>
+    </div>
+    <div class="avatar-modal-toolbar">
+      <div class="avatar-modal-sub" id="avatarModalSub">Select an image from this person's photos or upload your own file.</div>
+      <div class="avatar-modal-actions">
+        <label class="avatar-btn" title="Choose an image file from your computer">
+          <span>📁 Upload Custom</span>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(event)">
+        </label>
+        <button class="avatar-btn" id="avatarResetBtn" onclick="resetPersonAvatar()" title="Reset to auto-cropped face avatar">
+          <span>🔄 Reset</span>
+        </button>
+      </div>
+    </div>
+    <div class="avatar-grid-scroll">
+      <div class="avatar-photo-grid" id="avatarPhotoGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Avatar Cropper Modal -->
+<div id="avatarCropModal" onclick="closeCropModal(event)">
+  <div class="crop-modal-box" onclick="event.stopPropagation()">
+    <div class="crop-modal-header">
+      <div class="crop-modal-title" id="cropModalTitle">Adjust Portrait Crop</div>
+      <button class="avatar-modal-close" onclick="closeCropModal()" title="Close">&times;</button>
+    </div>
+    
+    <div class="crop-stage-container" id="cropStage">
+      <div class="crop-square-mask" id="cropMask"></div>
+      <img id="cropTargetImage" class="crop-target-img" src="" alt="Crop Target" draggable="false">
+    </div>
+    
+    <div class="crop-controls">
+      <div class="crop-slider-row">
+        <span>🔍 Zoom</span>
+        <input type="range" id="cropZoomSlider" min="1.0" max="4.5" step="0.05" value="1.0" oninput="handleCropZoom(this.value)">
+      </div>
+      <div class="crop-hint">Click & drag image inside square selection box • Scroll wheel to zoom</div>
+      <div class="crop-actions">
+        <button class="avatar-btn" onclick="closeCropModal()">Cancel</button>
+        <button class="avatar-btn" onclick="downloadCurrentCrop()" title="Download 400x400 JPG to place into .gallery-app/Custom Avatars/">💾 Download</button>
+        <button class="avatar-btn primary" onclick="applyCustomCrop()">✓ Apply Portrait</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Pre-compiled gallery data (Zero CORS issue over file://) -->
+<script src="gallery_data.js"></script>
+
+<script>
+// --- State ---
+const APP_VERSION = "2.3.0";
+const RAW_DATA = window.GALLERY_DATA || { items: [], people: [], tags: [], folders: [] };
+let pathOverrides = JSON.parse(localStorage.getItem("gallery_path_overrides") || "{}");
+let customAvatars = JSON.parse(localStorage.getItem("gallery_custom_avatars") || "{}");
+let currentEditingPerson = null;
+
+// Active Navigation Tab: 'timeline' | 'folders' | 'people' | 'tags'
+let currentNavTab = 'timeline';
+
+// Sort Order: 'newest' | 'oldest'
+let sortOrder = localStorage.getItem("gallery_sort_order") || "newest";
+
+// Active Filters (Preserved when switching between Timeline and Folders)
+let activePerson = null;     // e.g. "Brady"
+let activeTag = null;        // e.g. "family"
+let activeFolder = null;     // e.g. "Example Images/Years/2004"
+let activeYearMonth = null;  // e.g. "2004-12"
+let searchQuery = "";
+
+// Right Filter Sidebar State (on Timeline and Folders)
+let rightFilterOpen = localStorage.getItem("gallery_filter_open") === "true";
+let rightTab = 'people'; // 'people' or 'tags'
+
+// View settings
+let cropMode = localStorage.getItem("gallery_crop_mode") || "mosaic"; // 'mosaic' or 'square'
+if (cropMode === "full") cropMode = "mosaic";
+let cardSize = parseInt(localStorage.getItem("gallery_card_size") || "220", 10);
+let peopleSort = localStorage.getItem("gallery_people_sort") || "amount"; // 'amount' or 'name'
+let tagsSort = localStorage.getItem("gallery_tags_sort") || "amount";     // 'amount' or 'name'
+
+let displayedItems = [];
+let currentLightboxIndex = -1;
+
+// Active Decade / Year / Month tracked dynamically as user scrolls
+let currentActiveDecade = null;
+let currentActiveYear = null;
+let currentActiveYM = null;
+
+// Lightbox Zoom & Pan State
+let zoomScale = 1.0;
+let panX = 0;
+let panY = 0;
+let isPanning = false;
+let startPanX = 0;
+let startPanY = 0;
+
+// --- Initialize ---
+function init() {
+  document.getElementById('badgeTotal').textContent = RAW_DATA.items.length;
+  document.getElementById('badgeFolders').textContent = RAW_DATA.folders.length;
+  document.getElementById('badgePeople').textContent = RAW_DATA.people.length;
+  document.getElementById('badgeTags').textContent = RAW_DATA.tags.length;
+  const videoCount = RAW_DATA.items.filter(i => i.type === 'video').length;
+  const badgeVideos = document.getElementById('badgeVideos');
+  if (badgeVideos) badgeVideos.textContent = videoCount;
+
+  applySortOrder(sortOrder);
+  applyCropMode(cropMode);
+  applyCardSize(cardSize);
+  applyFilterPanelState();
+
+  renderFolderTree();
+  updateView();
+  setupKeyboard();
+  setupZoomAndPan();
+  setupCropperEvents();
+
+  const vpContent = document.getElementById('viewportContent');
+  if (typeof ResizeObserver !== 'undefined' && vpContent) {
+    new ResizeObserver(() => {
+      if (cropMode === 'mosaic') scheduleMosaicLayout();
+    }).observe(vpContent);
+  }
+  window.addEventListener('resize', () => {
+    if (cropMode === 'mosaic') scheduleMosaicLayout();
+  });
+}
+
+function resolvePath(item) {
+  return pathOverrides[item.name] || item.path;
+}
+
+function resolveThumb(item) {
+  if (item.thumb && !item.thumb.startsWith("http")) {
+    return item.thumb;
+  }
+  return resolvePath(item);
+}
+
+// --- Custom Person Avatar Helpers & Modal ---
+function getPersonAvatar(personName) {
+  if (customAvatars && customAvatars[personName]) {
+    return customAvatars[personName];
+  }
+  const found = RAW_DATA.people.find(p => p.name === personName);
+  return (found && found.avatar) ? found.avatar : null;
+}
+
+function handleAvatarImgError(imgEl, personName, isSidebar) {
+  if (imgEl.dataset.fallbackTried) {
+    const parent = imgEl.parentElement;
+    if (parent) {
+      const initial = escapeHtml(personName.charAt(0).toUpperCase());
+      parent.innerHTML = isSidebar ? `<span>${initial}</span>` : `<span class="person-full-initial">${initial}</span>`;
+    }
+    return;
+  }
+  imgEl.dataset.fallbackTried = '1';
+  const found = RAW_DATA.people.find(p => p.name === personName);
+  if (found && found.avatar && imgEl.getAttribute('src') !== found.avatar) {
+    // Reset custom crop transform styles if falling back to the pre-cropped avatar file
+    imgEl.removeAttribute('style');
+    imgEl.src = found.avatar;
+  } else {
+    const parent = imgEl.parentElement;
+    if (parent) {
+      const initial = escapeHtml(personName.charAt(0).toUpperCase());
+      parent.innerHTML = isSidebar ? `<span>${initial}</span>` : `<span class="person-full-initial">${initial}</span>`;
+    }
+  }
+}
+
+function renderAvatarHtml(avatarSrc, personName, isSidebar = false) {
+  if (!avatarSrc) {
+    return isSidebar 
+      ? `<span>${escapeHtml(personName.charAt(0).toUpperCase())}</span>` 
+      : `<span class="person-full-initial">${escapeHtml(personName.charAt(0).toUpperCase())}</span>`;
+  }
+  const safeNameAttr = escapeHtml(personName).replace(/'/g, "\\'");
+  if (typeof avatarSrc === 'object' && avatarSrc.src) {
+    const targetSize = isSidebar ? 34 : 90;
+    const ratio = targetSize / 200;
+    const w = (avatarSrc.baseW || 200) * ratio;
+    const h = (avatarSrc.baseH || 200) * ratio;
+    const px = (avatarSrc.x || 0) * ratio;
+    const py = (avatarSrc.y || 0) * ratio;
+    const zm = avatarSrc.zoom || 1.0;
+    return `
+      <div style="width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+        <img src="${escapeHtml(avatarSrc.src)}" alt="${escapeHtml(personName)}" onerror="handleAvatarImgError(this, '${safeNameAttr}', ${isSidebar})" style="width: ${w}px; height: ${h}px; max-width: none !important; max-height: none !important; transform: translate(${px}px, ${py}px) scale(${zm});">
+      </div>
+    `;
+  }
+  return `<img src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(personName)}" onerror="handleAvatarImgError(this, '${safeNameAttr}', ${isSidebar})">`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.display = 'none';
+  }, 2800);
+}
+
+function openAvatarPicker(e, personName) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  currentEditingPerson = personName;
+
+  const modal = document.getElementById('avatarPickerModal');
+  const title = document.getElementById('avatarModalTitle');
+  const sub = document.getElementById('avatarModalSub');
+  const grid = document.getElementById('avatarPhotoGrid');
+
+  title.textContent = `Choose Portrait Photo: ${personName}`;
+  sub.textContent = `Select any photo of ${personName} to crop their portrait.`;
+  grid.innerHTML = '';
+
+  const personPhotos = RAW_DATA.items.filter(item => item.people && item.people.includes(personName));
+
+  if (personPhotos.length === 0) {
+    grid.innerHTML = '<div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-dim);">No photos found with this person tagged. Use "Upload Custom" above.</div>';
+  } else {
+    personPhotos.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'avatar-option-card';
+
+      const displayThumb = resolveThumb(item);
+      const fullPath = resolvePath(item);
+      const faceCoords = (item.faces && item.faces[personName]) ? item.faces[personName] : null;
+      const label = item.date ? item.date.substring(0, 10) : item.name;
+
+      card.innerHTML = `
+        <img src="${escapeHtml(displayThumb)}" alt="${escapeHtml(item.name)}" loading="lazy">
+        ${faceCoords ? '<span class="avatar-face-tag" title="Face region tagged">👤 Tagged</span>' : ''}
+        <div class="avatar-crop-hint-badge">✂️ Crop Face</div>
+        <div class="avatar-option-badge">${escapeHtml(label)}</div>
+      `;
+
+      card.onclick = () => {
+        openManualCropper(personName, fullPath, faceCoords);
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeAvatarModal(e) {
+  if (e && e.target && e.target.id !== 'avatarPickerModal' && !e.target.classList.contains('avatar-modal-close')) {
+    return;
+  }
+  const modal = document.getElementById('avatarPickerModal');
+  if (modal) modal.style.display = 'none';
+  currentEditingPerson = null;
+}
+
+function setCustomAvatar(personName, avatarSrc) {
+  customAvatars[personName] = avatarSrc;
+  localStorage.setItem('gallery_custom_avatars', JSON.stringify(customAvatars));
+  showToast(`Updated avatar for ${personName}`);
+  const modal = document.getElementById('avatarPickerModal');
+  if (modal) modal.style.display = 'none';
+  currentEditingPerson = null;
+  renderPeopleFullPage();
+  renderRightFilterPanel();
+}
+
+function resetPersonAvatar() {
+  if (!currentEditingPerson) return;
+  if (customAvatars[currentEditingPerson]) {
+    delete customAvatars[currentEditingPerson];
+    localStorage.setItem('gallery_custom_avatars', JSON.stringify(customAvatars));
+    showToast(`Reset avatar to default for ${currentEditingPerson}`);
+    const modal = document.getElementById('avatarPickerModal');
+    if (modal) modal.style.display = 'none';
+    currentEditingPerson = null;
+    renderPeopleFullPage();
+    renderRightFilterPanel();
+  } else {
+    showToast(`Already using default avatar for ${currentEditingPerson}`);
+  }
+}
+
+// --- Interactive Manual Cropper State & Logic ---
+let cropPersonName = null;
+let cropTargetSrc = null;
+let cropZoom = 1.0;
+let cropPanX = 0;
+let cropPanY = 0;
+let isCropDragging = false;
+let startCropMouseX = 0;
+let startCropMouseY = 0;
+let cropImgBaseW = 200;
+let cropImgBaseH = 200;
+
+function openManualCropper(personName, imageSrc, faceCoords = null) {
+  cropPersonName = personName;
+  cropTargetSrc = imageSrc;
+  cropZoom = 1.0;
+  cropPanX = 0;
+  cropPanY = 0;
+
+  const modal = document.getElementById('avatarCropModal');
+  const title = document.getElementById('cropModalTitle');
+  const img = document.getElementById('cropTargetImage');
+  const slider = document.getElementById('cropZoomSlider');
+
+  if (title) title.textContent = `Crop Portrait: ${personName}`;
+
+  img.src = imageSrc;
+  img.onload = () => {
+    const maskSize = 220;
+    const nw = img.naturalWidth || 400;
+    const nh = img.naturalHeight || 400;
+    const aspect = nw / nh;
+    if (aspect >= 1) {
+      cropImgBaseH = maskSize;
+      cropImgBaseW = maskSize * aspect;
+    } else {
+      cropImgBaseW = maskSize;
+      cropImgBaseH = maskSize / aspect;
+    }
+    img.style.width = `${cropImgBaseW}px`;
+    img.style.height = `${cropImgBaseH}px`;
+
+    // If normalized face coordinates are provided: [cx, cy, rw, rh]
+    if (faceCoords && Array.isArray(faceCoords) && faceCoords.length === 4) {
+      const [cx, cy, rw, rh] = faceCoords;
+      const targetFacePx = rh * cropImgBaseH;
+      if (targetFacePx > 0) {
+        cropZoom = Math.max(1.0, Math.min(4.5, 120 / targetFacePx));
+      } else {
+        cropZoom = 1.5;
+      }
+      const dx = (cx - 0.5) * cropImgBaseW * cropZoom;
+      const dy = (cy - 0.5) * cropImgBaseH * cropZoom;
+      cropPanX = -dx;
+      cropPanY = -dy;
+    } else {
+      cropZoom = 1.0;
+      cropPanX = 0;
+      cropPanY = 0;
+    }
+
+    if (slider) slider.value = cropZoom.toFixed(2);
+    applyCropTransform();
+  };
+
+  modal.style.display = 'flex';
+}
+
+function handleCropZoom(val) {
+  cropZoom = parseFloat(val);
+  applyCropTransform();
+}
+
+function applyCropTransform() {
+  const img = document.getElementById('cropTargetImage');
+  if (!img) return;
+  img.style.transform = `translate(${cropPanX}px, ${cropPanY}px) scale(${cropZoom})`;
+}
+
+function closeCropModal(e) {
+  if (e && e.target && e.target.id !== 'avatarCropModal' && !e.target.classList.contains('avatar-modal-close') && e.target.tagName !== 'BUTTON') {
+    return;
+  }
+  const modal = document.getElementById('avatarCropModal');
+  if (modal) modal.style.display = 'none';
+  cropPersonName = null;
+  cropTargetSrc = null;
+}
+
+function setupCropperEvents() {
+  const stage = document.getElementById('cropStage');
+  if (!stage) return;
+
+  stage.addEventListener('mousedown', (e) => {
+    isCropDragging = true;
+    startCropMouseX = e.clientX - cropPanX;
+    startCropMouseY = e.clientY - cropPanY;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isCropDragging) return;
+    cropPanX = e.clientX - startCropMouseX;
+    cropPanY = e.clientY - startCropMouseY;
+    applyCropTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isCropDragging = false;
+  });
+
+  stage.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    cropZoom = Math.max(1.0, Math.min(4.5, cropZoom + delta));
+    const slider = document.getElementById('cropZoomSlider');
+    if (slider) slider.value = cropZoom.toFixed(2);
+    applyCropTransform();
+  }, { passive: false });
+}
+
+function applyCustomCrop() {
+  const img = document.getElementById('cropTargetImage');
+  if (!img || !cropPersonName) return;
+
+  const maskSize = 220;
+  const canvas = document.createElement('canvas');
+  canvas.width = 240;
+  canvas.height = 240;
+  const ctx = canvas.getContext('2d');
+
+  try {
+    const renderedW = cropImgBaseW * cropZoom;
+    const renderedH = cropImgBaseH * cropZoom;
+    const scaleX = (img.naturalWidth || renderedW) / renderedW;
+    const scaleY = (img.naturalHeight || renderedH) / renderedH;
+
+    const relX = (renderedW / 2 - cropPanX - maskSize / 2) * scaleX;
+    const relY = (renderedH / 2 - cropPanY - maskSize / 2) * scaleY;
+    const relSizeX = maskSize * scaleX;
+    const relSizeY = maskSize * scaleY;
+
+    ctx.drawImage(img, relX, relY, relSizeX, relSizeY, 0, 0, 240, 240);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    setCustomAvatar(cropPersonName, dataUrl);
+    closeCropModal();
+    return;
+  } catch (err) {
+    console.warn("Canvas export restricted, using CSS crop transform fallback:", err);
+  }
+
+  const transformData = {
+    src: cropTargetSrc,
+    zoom: cropZoom,
+    x: cropPanX,
+    y: cropPanY,
+    baseW: cropImgBaseW,
+    baseH: cropImgBaseH
+  };
+  setCustomAvatar(cropPersonName, transformData);
+  closeCropModal();
+}
+
+function downloadCurrentCrop() {
+  const img = document.getElementById('cropTargetImage');
+  if (!img || !cropPersonName) return;
+
+  const maskSize = 220;
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+
+  try {
+    const renderedW = cropImgBaseW * cropZoom;
+    const renderedH = cropImgBaseH * cropZoom;
+    const scaleX = (img.naturalWidth || renderedW) / renderedW;
+    const scaleY = (img.naturalHeight || renderedH) / renderedH;
+
+    const relX = (renderedW / 2 - cropPanX - maskSize / 2) * scaleX;
+    const relY = (renderedH / 2 - cropPanY - maskSize / 2) * scaleY;
+    const relSizeX = maskSize * scaleX;
+    const relSizeY = maskSize * scaleY;
+
+    ctx.drawImage(img, relX, relY, relSizeX, relSizeY, 0, 0, 400, 400);
+    const a = document.createElement('a');
+    a.download = `${cropPersonName}.jpg`;
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    a.click();
+    showToast(`Downloaded ${cropPersonName}.jpg (save to .gallery-app/Custom Avatars/)`);
+  } catch (err) {
+    console.error("Download crop error:", err);
+  }
+}
+
+function handleCustomAvatarUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file || !currentEditingPerson) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    openManualCropper(currentEditingPerson, dataUrl);
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+// --- Sort Order (Oldest / Newest) ---
+function setSortOrder(order) {
+  sortOrder = order;
+  localStorage.setItem("gallery_sort_order", order);
+  applySortOrder(order);
+  updateView();
+}
+
+function applySortOrder(order) {
+  const btnNewest = document.getElementById('optSortNewest');
+  const btnOldest = document.getElementById('optSortOldest');
+  if (order === 'oldest') {
+    btnOldest.classList.add('active');
+    btnNewest.classList.remove('active');
+  } else {
+    btnNewest.classList.add('active');
+    btnOldest.classList.remove('active');
+  }
+}
+
+// --- Top Navigation Tabs ---
+function switchNavTab(tab) {
+  currentNavTab = tab;
+  document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById('navTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const timelineRail = document.getElementById('timelineRail');
+  const folderPanel = document.getElementById('folderPanel');
+  const rightFilterPanel = document.getElementById('rightFilterPanel');
+  const toggleBtn = document.getElementById('toggleFilterPanelBtn');
+
+  if (tab === 'timeline' || tab === 'videos') {
+    timelineRail.style.display = 'flex';
+    folderPanel.classList.add('hidden');
+    toggleBtn.style.display = 'inline-flex';
+    applyFilterPanelState();
+  } else if (tab === 'folders') {
+    timelineRail.style.display = 'none';
+    folderPanel.classList.remove('hidden');
+    toggleBtn.style.display = 'inline-flex';
+    applyFilterPanelState();
+  } else {
+    // People or Tags full page views: maximize clean width
+    timelineRail.style.display = 'none';
+    folderPanel.classList.add('hidden');
+    rightFilterPanel.classList.add('hidden');
+    toggleBtn.style.display = 'none';
+  }
+
+  updateView();
+}
+
+// --- Right Filter Panel Toggle ---
+function toggleRightFilterPanel() {
+  rightFilterOpen = !rightFilterOpen;
+  localStorage.setItem("gallery_filter_open", rightFilterOpen);
+  applyFilterPanelState();
+}
+
+function applyFilterPanelState() {
+  const panel = document.getElementById('rightFilterPanel');
+  const btn = document.getElementById('toggleFilterPanelBtn');
+
+  if (currentNavTab === 'timeline' || currentNavTab === 'folders' || currentNavTab === 'videos') {
+    if (rightFilterOpen) {
+      panel.classList.remove('hidden');
+      btn.classList.add('active');
+      renderRightFilterPanel();
+    } else {
+      panel.classList.add('hidden');
+      btn.classList.remove('active');
+    }
+  } else {
+    panel.classList.add('hidden');
+  }
+}
+
+function switchRightTab(tab) {
+  rightTab = tab;
+  document.getElementById('rtPeopleBtn').classList.toggle('active', tab === 'people');
+  document.getElementById('rtTagsBtn').classList.toggle('active', tab === 'tags');
+  renderRightFilterPanel();
+}
+
+function renderRightFilterPanel() {
+  const container = document.getElementById('rightFilterContent');
+  container.innerHTML = '';
+
+  if (rightTab === 'people') {
+    const list = document.createElement('div');
+    list.className = 'side-people-list';
+    RAW_DATA.people.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'side-person-row' + (activePerson === p.name ? ' selected' : '');
+
+      const avatarSrc = getPersonAvatar(p.name);
+      const avatarHtml = renderAvatarHtml(avatarSrc, p.name, true);
+
+      row.innerHTML = `
+        <div class="side-avatar">${avatarHtml}</div>
+        <div class="side-pname">${escapeHtml(p.name)}</div>
+        <div class="side-pcount">${p.count}</div>
+      `;
+      row.onclick = () => {
+        activePerson = (activePerson === p.name) ? null : p.name;
+        renderRightFilterPanel();
+        updateView();
+      };
+      list.appendChild(row);
+    });
+    container.appendChild(list);
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'side-tags-wrap';
+    RAW_DATA.tags.forEach(t => {
+      const el = document.createElement('span');
+      el.className = 'side-tag' + (activeTag === t.name ? ' selected' : '');
+      el.innerHTML = `${escapeHtml(t.name)} <span>(${t.count})</span>`;
+      el.onclick = () => {
+        activeTag = (activeTag === t.name) ? null : t.name;
+        renderRightFilterPanel();
+        updateView();
+      };
+      wrap.appendChild(el);
+    });
+    container.appendChild(wrap);
+  }
+}
+
+// --- View Settings: Crop & Size ---
+function setCropMode(mode) {
+  cropMode = mode;
+  localStorage.setItem("gallery_crop_mode", mode);
+  applyCropMode(mode);
+}
+
+function applyCropMode(mode) {
+  const main = document.getElementById('mainViewport');
+  const btnSq = document.getElementById('optCropSquare');
+  const btnMs = document.getElementById('optCropMosaic');
+
+  main.classList.remove('mode-square', 'mode-mosaic');
+  btnSq.classList.remove('active');
+  if (btnMs) btnMs.classList.remove('active');
+
+  if (mode === 'square') {
+    main.classList.add('mode-square');
+    btnSq.classList.add('active');
+  } else {
+    main.classList.add('mode-mosaic');
+    if (btnMs) btnMs.classList.add('active');
+  }
+
+  scheduleMosaicLayout();
+}
+
+let mosaicRafId = null;
+function scheduleMosaicLayout() {
+  if (mosaicRafId !== null) cancelAnimationFrame(mosaicRafId);
+  mosaicRafId = requestAnimationFrame(() => {
+    mosaicRafId = null;
+    layoutMosaicGrids();
+  });
+}
+
+function layoutMosaicGrids() {
+  const grids = document.querySelectorAll('#viewportContent .media-grid');
+  if (!grids.length) return;
+
+  if (cropMode !== 'mosaic') {
+    grids.forEach(grid => {
+      for (const card of grid.children) {
+        card.style.width = '';
+        card.style.height = '';
+      }
+    });
+    return;
+  }
+
+  const gap = 10;
+  const targetH = cardSize;
+
+  grids.forEach(grid => {
+    const containerW = grid.clientWidth;
+    if (containerW <= 0) return;
+
+    const cards = Array.from(grid.children);
+    let row = [];
+    let rowAspectSum = 0;
+
+    const flushRow = (isLastRow) => {
+      if (!row.length) return;
+      const totalGap = (row.length - 1) * gap;
+      if (isLastRow) {
+        const h = Math.min(targetH, (containerW - totalGap) / rowAspectSum);
+        const rowH = Math.max(80, h);
+        row.forEach(({ card, ar }) => {
+          card.style.height = rowH.toFixed(2) + 'px';
+          card.style.width = (rowH * ar).toFixed(2) + 'px';
+        });
+      } else {
+        const availW = containerW - totalGap - 0.5;
+        const rowH = availW / rowAspectSum;
+        row.forEach(({ card, ar }) => {
+          card.style.height = rowH.toFixed(2) + 'px';
+          card.style.width = (availW * (ar / rowAspectSum)).toFixed(2) + 'px';
+        });
+      }
+      row = [];
+      rowAspectSum = 0;
+    };
+
+    for (const card of cards) {
+      const ar = Math.max(0.25, Math.min(4.5, parseFloat(card.dataset.ar) || 1.33333));
+      row.push({ card, ar });
+      rowAspectSum += ar;
+
+      const projectedW = rowAspectSum * targetH + (row.length - 1) * gap;
+      if (projectedW >= containerW) {
+        flushRow(false);
+      }
+    }
+    flushRow(true);
+  });
+}
+
+function handleSizeChange(val) {
+  cardSize = parseInt(val, 10);
+  localStorage.setItem("gallery_card_size", cardSize);
+  applyCardSize(cardSize);
+  if (cropMode === 'mosaic') scheduleMosaicLayout();
+}
+
+function applyCardSize(size) {
+  document.documentElement.style.setProperty('--card-size', `${size}px`);
+  document.getElementById('sizeSlider').value = size;
+}
+
+// --- Left Timeline Rail: Collapses into Decades, Expands Active Decade to Years, Expands Active Year to Months ---
+function renderTimelineRail() {
+  const rail = document.getElementById('timelineRail');
+  rail.innerHTML = '';
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Group displayed items by Decade -> Year -> Months
+  const decadeGroups = {};
+  displayedItems.forEach(i => {
+    if (i.date && i.date.length >= 7) {
+      const yStr = i.date.substring(0, 4);
+      if (/^\d{4}$/.test(yStr)) {
+        const yNum = parseInt(yStr, 10);
+        const dec = `${Math.floor(yNum / 10) * 10}s`;
+        const ym = i.date.substring(0, 7);
+
+        if (!decadeGroups[dec]) decadeGroups[dec] = { count: 0, years: {} };
+        decadeGroups[dec].count++;
+
+        if (!decadeGroups[dec].years[yStr]) decadeGroups[dec].years[yStr] = { count: 0, months: {} };
+        decadeGroups[dec].years[yStr].count++;
+        decadeGroups[dec].years[yStr].months[ym] = (decadeGroups[dec].years[yStr].months[ym] || 0) + 1;
+      }
+    }
+  });
+
+  const sortedDecades = Object.keys(decadeGroups).sort((a, b) => {
+    return sortOrder === 'newest' ? b.localeCompare(a) : a.localeCompare(b);
+  });
+
+  if (sortedDecades.length === 0) return;
+
+  // Initialize active decade and year if not set
+  if (!currentActiveDecade || !decadeGroups[currentActiveDecade]) {
+    currentActiveDecade = sortedDecades[0];
+  }
+  const yearsInActiveDec = Object.keys(decadeGroups[currentActiveDecade].years).sort((a, b) => {
+    return sortOrder === 'newest' ? b.localeCompare(a) : a.localeCompare(b);
+  });
+  if (!currentActiveYear || !decadeGroups[currentActiveDecade].years[currentActiveYear]) {
+    currentActiveYear = yearsInActiveDec[0] || null;
+  }
+
+  sortedDecades.forEach(decade => {
+    const decData = decadeGroups[decade];
+    const isDecadeActive = (decade === currentActiveDecade);
+
+    const decGroup = document.createElement('div');
+    decGroup.className = 'rail-decade-group' + (isDecadeActive ? ' active' : '');
+    decGroup.dataset.decade = decade;
+
+    const decNode = document.createElement('div');
+    decNode.className = 'rail-decade-node';
+    const yrCount = Object.keys(decData.years).length;
+    decNode.title = `${decade} (${yrCount} ${yrCount === 1 ? 'year' : 'years'}, ${decData.count} items) - Click to expand decade`;
+    decNode.innerHTML = `
+      <span class="rail-decade-label">${decade}</span>
+      <div class="rail-decade-indicator"></div>
+    `;
+
+    decNode.onclick = () => {
+      currentActiveDecade = decade;
+      const sortedYearsInDec = Object.keys(decData.years).sort((a, b) => {
+        return sortOrder === 'newest' ? b.localeCompare(a) : a.localeCompare(b);
+      });
+      currentActiveYear = sortedYearsInDec[0] || null;
+      currentActiveYM = null;
+      updateRailActiveState();
+
+      const targetSec = document.querySelector(`.timeline-section[data-decade="${decade}"]`);
+      if (targetSec) {
+        targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    decGroup.appendChild(decNode);
+
+    // Years Container inside Decade (Collapsed unless decade is active!)
+    const yearsContainer = document.createElement('div');
+    yearsContainer.className = 'rail-years-container';
+
+    const sortedYears = Object.keys(decData.years).sort((a, b) => {
+      return sortOrder === 'newest' ? b.localeCompare(a) : a.localeCompare(b);
+    });
+
+    sortedYears.forEach(year => {
+      const yData = decData.years[year];
+      const isYearActive = (year === currentActiveYear);
+
+      const yearGroup = document.createElement('div');
+      yearGroup.className = 'rail-year-group' + (isYearActive ? ' active' : '');
+      yearGroup.dataset.year = year;
+
+      const yearNode = document.createElement('div');
+      yearNode.className = 'rail-year-node';
+      yearNode.title = `${year} (${yData.count} items) - Click to jump`;
+      yearNode.innerHTML = `
+        <span class="rail-year-label">${year}</span>
+        <div class="rail-tick"></div>
+      `;
+
+      yearNode.onclick = (e) => {
+        e.stopPropagation();
+        currentActiveDecade = decade;
+        currentActiveYear = year;
+        currentActiveYM = null;
+        updateRailActiveState();
+
+        const targetSec = document.querySelector(`.timeline-section[data-year="${year}"]`);
+        if (targetSec) {
+          targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
+
+      yearGroup.appendChild(yearNode);
+
+      // Months Container inside Year (Collapsed unless year is active!)
+      const monthsContainer = document.createElement('div');
+      monthsContainer.className = 'rail-months-container';
+
+      const sortedMonths = Object.keys(yData.months).sort((a, b) => {
+        return sortOrder === 'newest' ? b.localeCompare(a) : a.localeCompare(b);
+      });
+
+      sortedMonths.forEach(ym => {
+        const mNum = parseInt(ym.substring(5, 7), 10);
+        const mLabel = monthNames[mNum - 1] || ym.substring(5, 7);
+        const isMonthActive = (ym === currentActiveYM);
+
+        const mItem = document.createElement('div');
+        mItem.className = 'rail-month-item' + (isMonthActive ? ' active' : '');
+        mItem.dataset.ym = ym;
+        mItem.title = `${mLabel} ${year} (${yData.months[ym]} items)`;
+        mItem.textContent = mLabel;
+
+        mItem.onclick = (e) => {
+          e.stopPropagation();
+          currentActiveDecade = decade;
+          currentActiveYear = year;
+          currentActiveYM = ym;
+          updateRailActiveState();
+
+          const targetSec = document.querySelector(`.timeline-section[data-ym="${ym}"]`);
+          if (targetSec) {
+            targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+
+        monthsContainer.appendChild(mItem);
+      });
+
+      yearGroup.appendChild(monthsContainer);
+      yearsContainer.appendChild(yearGroup);
+    });
+
+    decGroup.appendChild(yearsContainer);
+    rail.appendChild(decGroup);
+  });
+}
+
+// Fast DOM update for active decade, year, and month
+function updateRailActiveState() {
+  document.querySelectorAll('.rail-decade-group').forEach(el => {
+    const isDec = el.dataset.decade === currentActiveDecade;
+    el.classList.toggle('active', isDec);
+  });
+  document.querySelectorAll('.rail-year-group').forEach(el => {
+    const isY = el.dataset.year === currentActiveYear;
+    el.classList.toggle('active', isY);
+  });
+  document.querySelectorAll('.rail-month-item').forEach(el => {
+    const isM = el.dataset.ym === currentActiveYM;
+    el.classList.toggle('active', isM);
+  });
+}
+
+// Scroll Spy: Automatically expands the decade and year currently being scrolled/viewed!
+let scrollTimer = null;
+function handleViewportScroll() {
+  if (currentNavTab !== 'timeline' && currentNavTab !== 'videos') return;
+
+  if (scrollTimer) return;
+  scrollTimer = setTimeout(() => {
+    scrollTimer = null;
+    const viewport = document.getElementById('mainViewport');
+    const sections = viewport.querySelectorAll('.timeline-section');
+    if (sections.length === 0) return;
+
+    let activeSec = sections[0];
+    const targetOffset = viewport.scrollTop + 80;
+
+    for (let i = 0; i < sections.length; i++) {
+      const sec = sections[i];
+      if (sec.offsetTop <= targetOffset) {
+        activeSec = sec;
+      } else {
+        break;
+      }
+    }
+
+    if (activeSec) {
+      const decade = activeSec.dataset.decade;
+      const year = activeSec.dataset.year;
+      const ym = activeSec.dataset.ym;
+      if (decade && (decade !== currentActiveDecade || year !== currentActiveYear || ym !== currentActiveYM)) {
+        currentActiveDecade = decade;
+        currentActiveYear = year;
+        currentActiveYM = ym;
+        updateRailActiveState();
+      }
+    }
+  }, 90);
+}
+
+// --- Left Folder Tree (Hierarchical) ---
+function buildFolderTreeData(folders, items) {
+  const root = { name: "All Folders", path: "", children: {} };
+  const folderCounts = {};
+  items.forEach(i => {
+    folderCounts[i.folder] = (folderCounts[i.folder] || 0) + 1;
+  });
+
+  folders.forEach(f => {
+    const parts = f.split("/");
+    let curr = root;
+    let accPath = "";
+    parts.forEach(p => {
+      accPath = accPath ? `${accPath}/${p}` : p;
+      if (!curr.children[p]) {
+        curr.children[p] = {
+          name: p,
+          path: accPath,
+          children: {},
+          directCount: folderCounts[accPath] || 0
+        };
+      }
+      curr = curr.children[p];
+    });
+  });
+
+  function sumCounts(node) {
+    let sum = node.directCount || 0;
+    for (const child of Object.values(node.children)) {
+      sum += sumCounts(child);
+    }
+    node.totalCount = sum;
+    return sum;
+  }
+  sumCounts(root);
+  return root;
+}
+
+let expandedFolderPaths = null;
+
+function renderFolderTree() {
+  const container = document.getElementById('folderTreeContainer');
+  const countBadge = document.getElementById('folderTreeCount');
+  container.innerHTML = '';
+  countBadge.textContent = `${RAW_DATA.folders.length} folders`;
+
+  const treeData = buildFolderTreeData(RAW_DATA.folders, RAW_DATA.items);
+
+  // Default state: Expand first-level folders so their immediate contents are visible
+  if (expandedFolderPaths === null) {
+    expandedFolderPaths = new Set();
+    const topKeys = Object.keys(treeData.children);
+
+    if (topKeys.length === 1) {
+      // If there is only 1 top-level wrapper folder, expand it and its direct children
+      const singleRoot = treeData.children[topKeys[0]];
+      if (singleRoot.path) expandedFolderPaths.add(singleRoot.path);
+      for (const child of Object.values(singleRoot.children)) {
+        if (child.path) expandedFolderPaths.add(child.path);
+      }
+    } else {
+      // Multi-folder drive: expand all first-level folders
+      for (const child of Object.values(treeData.children)) {
+        if (child.path) expandedFolderPaths.add(child.path);
+      }
+    }
+  }
+
+  // Root option (Entire drive)
+  const rootRow = document.createElement('div');
+  rootRow.className = 'tree-row' + (!activeFolder ? ' selected' : '');
+  rootRow.innerHTML = `
+    <span class="tree-icon">💾</span>
+    <span class="tree-name">All Folders</span>
+    <span class="tree-badge">${RAW_DATA.items.length}</span>
+  `;
+  rootRow.onclick = () => {
+    activeFolder = null;
+    renderFolderTree();
+    updateView();
+  };
+  container.appendChild(rootRow);
+
+  const wrap = document.createElement('div');
+  wrap.style.marginTop = '6px';
+  for (const child of Object.values(treeData.children)) {
+    wrap.appendChild(createTreeNodeElement(child, 0));
+  }
+  container.appendChild(wrap);
+}
+
+function createTreeNodeElement(node, depth = 0) {
+  const wrap = document.createElement('div');
+  wrap.className = 'tree-node';
+
+  const hasChildren = Object.keys(node.children).length > 0;
+  const isSelected = activeFolder === node.path;
+
+  // Auto-expand path leading to selected folder if activeFolder is set
+  const isAncestorOfActive = Boolean(activeFolder && (activeFolder === node.path || activeFolder.startsWith(node.path + '/')));
+  if (isAncestorOfActive && node.path) {
+    expandedFolderPaths.add(node.path);
+  }
+
+  const isExpanded = hasChildren && expandedFolderPaths.has(node.path);
+
+  const row = document.createElement('div');
+  row.className = 'tree-row' + (isSelected ? ' selected' : '');
+
+  const expander = document.createElement('span');
+  expander.className = 'tree-expander' + (hasChildren ? '' : ' empty');
+  expander.textContent = hasChildren ? (isExpanded ? '▼' : '▶') : '';
+
+  const icon = document.createElement('span');
+  icon.className = 'tree-icon';
+  icon.textContent = hasChildren ? '📁' : '📂';
+
+  const name = document.createElement('span');
+  name.className = 'tree-name';
+  name.textContent = node.name;
+  name.title = node.path;
+
+  const badge = document.createElement('span');
+  badge.className = 'tree-badge';
+  badge.textContent = node.totalCount;
+
+  row.appendChild(expander);
+  row.appendChild(icon);
+  row.appendChild(name);
+  row.appendChild(badge);
+
+  row.onclick = (e) => {
+    if (e.target === expander && hasChildren) return;
+    activeFolder = (activeFolder === node.path) ? null : node.path;
+    renderFolderTree();
+    updateView();
+  };
+
+  wrap.appendChild(row);
+
+  if (hasChildren) {
+    const childrenContainer = document.createElement('div');
+    childrenContainer.className = 'tree-children' + (isExpanded ? '' : ' collapsed');
+
+    expander.onclick = (e) => {
+      e.stopPropagation();
+      const isNowCollapsed = childrenContainer.classList.toggle('collapsed');
+      expander.textContent = isNowCollapsed ? '▶' : '▼';
+      if (isNowCollapsed) {
+        expandedFolderPaths.delete(node.path);
+      } else {
+        expandedFolderPaths.add(node.path);
+      }
+    };
+
+    for (const child of Object.values(node.children)) {
+      childrenContainer.appendChild(createTreeNodeElement(child, depth + 1));
+    }
+    wrap.appendChild(childrenContainer);
+  }
+
+  return wrap;
+}
+
+function expandAllFolders(expand) {
+  const container = document.getElementById('folderTreeContainer');
+  if (!container) return;
+
+  if (expand) {
+    expandedFolderPaths = new Set();
+    const treeData = buildFolderTreeData(RAW_DATA.folders, RAW_DATA.items);
+    function addAll(node) {
+      if (node.path) expandedFolderPaths.add(node.path);
+      for (const child of Object.values(node.children)) {
+        addAll(child);
+      }
+    }
+    addAll(treeData);
+  } else {
+    expandedFolderPaths = new Set();
+  }
+
+  const childContainers = container.querySelectorAll('.tree-children');
+  childContainers.forEach(cc => {
+    cc.classList.toggle('collapsed', !expand);
+  });
+
+  const expanders = container.querySelectorAll('.tree-expander:not(.empty)');
+  expanders.forEach(ex => {
+    ex.textContent = expand ? '▼' : '▶';
+  });
+}
+
+// --- Query Filtered Items ---
+function getFilteredItems() {
+  const filtered = RAW_DATA.items.filter(item => {
+    if (currentNavTab === 'videos') {
+      if (item.type !== 'video') return false;
+    }
+    if (activeFolder) {
+      if (item.folder !== activeFolder && !item.folder.startsWith(activeFolder + "/")) return false;
+    }
+    if (activeYearMonth) {
+      if (!item.date || !item.date.startsWith(activeYearMonth)) return false;
+    }
+    if (activePerson) {
+      if (!item.people || !item.people.includes(activePerson)) return false;
+    }
+    if (activeTag) {
+      if (!item.tags || !item.tags.includes(activeTag)) return false;
+    }
+    if (searchQuery) {
+      const matchName = item.name.toLowerCase().includes(searchQuery);
+      const matchTitle = item.title && item.title.toLowerCase().includes(searchQuery);
+      const matchComment = item.comment && item.comment.toLowerCase().includes(searchQuery);
+      const matchFolder = item.folder.toLowerCase().includes(searchQuery);
+      const matchPeople = item.people && item.people.some(p => p.toLowerCase().includes(searchQuery));
+      const matchTags = item.tags && item.tags.some(t => t.toLowerCase().includes(searchQuery));
+      if (!matchName && !matchTitle && !matchComment && !matchFolder && !matchPeople && !matchTags) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const dateA = a.date || "";
+    const dateB = b.date || "";
+    return sortOrder === 'newest' ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
+  });
+
+  return filtered;
+}
+
+// --- Main View Switcher ---
+function updateView() {
+  renderFilterBar();
+  displayedItems = getFilteredItems();
+
+  if (currentNavTab === 'timeline' || currentNavTab === 'videos') {
+    renderTimelineView();
+    renderTimelineRail();
+    if (cropMode === 'mosaic') scheduleMosaicLayout();
+  } else if (currentNavTab === 'folders') {
+    renderFoldersView();
+    if (cropMode === 'mosaic') scheduleMosaicLayout();
+  } else if (currentNavTab === 'people') {
+    renderPeopleFullPage();
+  } else if (currentNavTab === 'tags') {
+    renderTagsFullPage();
+  }
+}
+
+// --- 1. Timeline View (Chronological grouping) ---
+function renderTimelineView() {
+  document.getElementById('viewportHeader').style.display = 'flex';
+  const titleEl = document.getElementById('viewportTitle');
+  const countEl = document.getElementById('viewportCount');
+  const container = document.getElementById('viewportContent');
+  container.innerHTML = '';
+
+  if (currentNavTab === 'videos') {
+    titleEl.textContent = `Home Videos (${sortOrder === 'newest' ? 'Newest First' : 'Oldest First'})`;
+  } else {
+    titleEl.textContent = `Timeline (${sortOrder === 'newest' ? 'Newest First' : 'Oldest First'})`;
+  }
+  countEl.textContent = `${displayedItems.length} items`;
+
+  if (displayedItems.length === 0) {
+    renderEmptyState(container);
+    return;
+  }
+
+  const groups = {};
+  displayedItems.forEach(item => {
+    let key = "Undated";
+    let yearKey = "undated";
+    let ymKey = "undated";
+    if (item.date && item.date.length >= 7) {
+      const parts = item.date.split(" ")[0].split("-");
+      if (parts.length >= 2) {
+        const y = parts[0];
+        const m = parseInt(parts[1], 10);
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        key = `${monthNames[m - 1] || parts[1]} ${y}`;
+        yearKey = y;
+        ymKey = `${y}-${parts[1]}`;
+      }
+    }
+    if (!groups[key]) groups[key] = { year: yearKey, ym: ymKey, items: [] };
+    groups[key].items.push(item);
+  });
+
+  const renderedDecades = new Set();
+  const renderedYears = new Set();
+  for (const [groupName, groupData] of Object.entries(groups)) {
+    const sec = document.createElement('div');
+    sec.className = 'timeline-section';
+    sec.id = `sec-ym-${groupData.ym}`;
+    sec.dataset.year = groupData.year;
+    sec.dataset.ym = groupData.ym;
+
+    const dec = (groupData.year && groupData.year !== 'undated' && groupData.year.length === 4)
+      ? `${Math.floor(parseInt(groupData.year, 10) / 10) * 10}s`
+      : 'undated';
+    sec.dataset.decade = dec;
+
+    if (groupData.year !== 'undated' && !renderedYears.has(groupData.year)) {
+      sec.id = `sec-year-${groupData.year}`;
+      renderedYears.add(groupData.year);
+    }
+
+    const header = document.createElement('div');
+    header.className = 'timeline-sec-header';
+    header.innerHTML = `<span>${escapeHtml(groupName)}</span> <span class="timeline-sec-count">(${groupData.items.length})</span>`;
+    sec.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'media-grid';
+    groupData.items.forEach(item => {
+      grid.appendChild(createMediaCard(item));
+    });
+
+    sec.appendChild(grid);
+    container.appendChild(sec);
+  }
+}
+
+// --- 2. Folders View (Organized by folder with Folder Tree on left) ---
+function renderFoldersView() {
+  document.getElementById('viewportHeader').style.display = 'flex';
+  const titleEl = document.getElementById('viewportTitle');
+  const countEl = document.getElementById('viewportCount');
+  const container = document.getElementById('viewportContent');
+  container.innerHTML = '';
+
+  titleEl.textContent = activeFolder ? `Folder: ${activeFolder}` : "All Folders";
+  countEl.textContent = `${displayedItems.length} items`;
+
+  if (displayedItems.length === 0) {
+    renderEmptyState(container);
+    return;
+  }
+
+  if (!activeFolder) {
+    const folderGroups = {};
+    displayedItems.forEach(item => {
+      const f = item.folder || "Root";
+      if (!folderGroups[f]) folderGroups[f] = [];
+      folderGroups[f].push(item);
+    });
+
+    for (const [folderName, items] of Object.entries(folderGroups)) {
+      const sec = document.createElement('div');
+      sec.className = 'timeline-section';
+
+      const header = document.createElement('div');
+      header.className = 'timeline-sec-header';
+      header.innerHTML = `<span>📁 ${escapeHtml(folderName)}</span> <span class="timeline-sec-count">(${items.length})</span>`;
+      sec.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'media-grid';
+      items.forEach(item => {
+        grid.appendChild(createMediaCard(item));
+      });
+      sec.appendChild(grid);
+      container.appendChild(sec);
+    }
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'media-grid';
+    displayedItems.forEach(item => {
+      grid.appendChild(createMediaCard(item));
+    });
+    container.appendChild(grid);
+  }
+}
+
+// --- 3. Full Page View: People ---
+function setPeopleSort(sort) {
+  peopleSort = sort;
+  localStorage.setItem("gallery_people_sort", sort);
+  renderPeopleFullPage();
+}
+
+function renderPeopleFullPage() {
+  document.getElementById('viewportHeader').style.display = 'none';
+  const container = document.getElementById('viewportContent');
+  container.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'fullpage-view';
+
+  wrap.innerHTML = `
+    <div class="fullpage-header">
+      <div>
+        <h2>People & Portraits</h2>
+        <p>Click on any person to view all photos and videos they appear in.</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Sort:</span>
+        <div class="toggle-group" title="Sort People">
+          <button class="toggle-opt ${peopleSort === 'amount' ? 'active' : ''}" onclick="setPeopleSort('amount')">📊 By Amount</button>
+          <button class="toggle-opt ${peopleSort === 'name' ? 'active' : ''}" onclick="setPeopleSort('name')">🔤 By Name</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const grid = document.createElement('div');
+  grid.className = 'people-full-grid';
+
+  const sortedPeople = [...RAW_DATA.people].sort((a, b) => {
+    if (peopleSort === 'name') {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    } else {
+      const diff = b.count - a.count;
+      return diff !== 0 ? diff : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+  });
+
+  sortedPeople.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'person-full-card';
+
+    const avatarSrc = getPersonAvatar(p.name);
+    const avatarContent = renderAvatarHtml(avatarSrc, p.name, false);
+
+    card.innerHTML = `
+      <div class="person-full-avatar">
+        ${avatarContent}
+      </div>
+      <div class="person-full-name">${escapeHtml(p.name)}</div>
+      <div class="person-full-count">${p.count} ${p.count === 1 ? 'photo' : 'photos'}</div>
+      <button class="person-change-btn" onclick="openAvatarPicker(event, '${escapeHtml(p.name)}')" title="Change portrait for ${escapeHtml(p.name)}">
+        <span>📷 Change Photo</span>
+      </button>
+    `;
+
+    card.onclick = (e) => {
+      if (e.target.closest('.person-change-btn')) return;
+      activePerson = p.name;
+      switchNavTab('timeline');
+    };
+
+    grid.appendChild(card);
+  });
+
+  wrap.appendChild(grid);
+  container.appendChild(wrap);
+}
+
+// --- 4. Full Page View: Tags ---
+function setTagsSort(sort) {
+  tagsSort = sort;
+  localStorage.setItem("gallery_tags_sort", sort);
+  renderTagsFullPage();
+}
+
+function renderTagsFullPage() {
+  document.getElementById('viewportHeader').style.display = 'none';
+  const container = document.getElementById('viewportContent');
+  container.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'fullpage-view';
+
+  wrap.innerHTML = `
+    <div class="fullpage-header">
+      <div>
+        <h2>Keywords & Tags</h2>
+        <p>Click on any tag to filter the timeline by that subject.</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Sort:</span>
+        <div class="toggle-group" title="Sort Tags">
+          <button class="toggle-opt ${tagsSort === 'amount' ? 'active' : ''}" onclick="setTagsSort('amount')">📊 By Amount</button>
+          <button class="toggle-opt ${tagsSort === 'name' ? 'active' : ''}" onclick="setTagsSort('name')">🔤 By Name</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const cloud = document.createElement('div');
+  cloud.className = 'tags-full-cloud';
+
+  if (!RAW_DATA.tags || RAW_DATA.tags.length === 0) {
+    cloud.innerHTML = '<div style="color: var(--text-dim);">No tags found in image metadata.</div>';
+    wrap.appendChild(cloud);
+    container.appendChild(wrap);
+    return;
+  }
+
+  const sortedTags = [...RAW_DATA.tags].sort((a, b) => {
+    if (tagsSort === 'name') {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    } else {
+      const diff = b.count - a.count;
+      return diff !== 0 ? diff : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+  });
+
+  const maxCount = Math.max(...sortedTags.map(t => t.count), 1);
+  const minCount = Math.min(...sortedTags.map(t => t.count), 1);
+
+  sortedTags.forEach(t => {
+    const pill = document.createElement('span');
+    pill.className = 'cloud-pill';
+
+    const weight = maxCount === minCount ? 0.5 : (t.count - minCount) / (maxCount - minCount);
+    const size = 0.85 + weight * 0.75;
+    pill.style.fontSize = `${size}rem`;
+
+    pill.innerHTML = `<span>${escapeHtml(t.name)}</span><span class="cloud-pill-count">(${t.count})</span>`;
+
+    pill.onclick = () => {
+      activeTag = t.name;
+      switchNavTab('timeline');
+    };
+
+    cloud.appendChild(pill);
+  });
+
+  wrap.appendChild(cloud);
+  container.appendChild(wrap);
+}
+
+// --- Media Card Component ---
+function createMediaCard(item) {
+  const card = document.createElement('div');
+  card.className = 'media-card' + (item.type === 'video' ? ' is-video' : '');
+  const hasDims = item.w && item.h && item.h > 0;
+  card.dataset.ar = hasDims
+    ? (item.w / item.h).toFixed(5)
+    : (item.type === 'video' ? '1.77778' : '1.33333');
+
+  const thumbSrc = resolveThumb(item);
+  const displayTitle = item.title || item.name;
+
+  card.innerHTML = `
+    <div class="card-img-wrap">
+      <img src="${escapeHtml(thumbSrc)}" loading="lazy" alt="${escapeHtml(displayTitle)}" onerror="this.style.opacity='0.2'">
+    </div>
+    ${item.type === 'video' ? `
+      <div class="card-video-banner" title="${escapeHtml(displayTitle)}">
+        <div class="card-video-top-line">
+          <span class="card-video-badge-pill">▶ VIDEO</span>
+          ${item.duration ? `<span class="card-video-duration">${escapeHtml(item.duration)}</span>` : ''}
+        </div>
+        <div class="card-video-title">${escapeHtml(displayTitle)}</div>
+      </div>
+    ` : ''}
+    ${item.people && item.people.length ? `<span class="card-people-badge">👥 ${item.people.length}</span>` : ''}
+  `;
+
+  if (!hasDims) {
+    const imgEl = card.querySelector('img');
+    if (imgEl) {
+      imgEl.addEventListener('load', () => {
+        if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
+          card.dataset.ar = (imgEl.naturalWidth / imgEl.naturalHeight).toFixed(5);
+          if (cropMode === 'mosaic') scheduleMosaicLayout();
+        }
+      });
+    }
+  }
+
+  card.onclick = () => {
+    currentLightboxIndex = displayedItems.indexOf(item);
+    openLightbox(item);
+  };
+  return card;
+}
+
+// --- Filter Bar Chips ---
+function renderFilterBar() {
+  const bar = document.getElementById('filterBar');
+  const chips = document.getElementById('filterChips');
+  chips.innerHTML = '';
+
+  const hasFilter = activePerson || activeTag || activeFolder || activeYearMonth || searchQuery;
+  if (!hasFilter) {
+    bar.classList.remove('visible');
+    return;
+  }
+  bar.classList.add('visible');
+
+  if (activePerson) {
+    chips.appendChild(createChip(`👤 Person: ${activePerson}`, () => {
+      activePerson = null;
+      renderRightFilterPanel();
+      updateView();
+    }));
+  }
+  if (activeTag) {
+    chips.appendChild(createChip(`🏷️ Tag: ${activeTag}`, () => {
+      activeTag = null;
+      renderRightFilterPanel();
+      updateView();
+    }));
+  }
+  if (activeFolder) {
+    chips.appendChild(createChip(`📁 Folder: ${activeFolder}`, () => {
+      activeFolder = null;
+      renderFolderTree();
+      updateView();
+    }));
+  }
+  if (activeYearMonth) {
+    chips.appendChild(createChip(`📅 ${activeYearMonth}`, () => {
+      activeYearMonth = null;
+      updateView();
+    }));
+  }
+  if (searchQuery) {
+    chips.appendChild(createChip(`🔍 "${searchQuery}"`, () => clearSearch()));
+  }
+}
+
+function createChip(label, onRemove) {
+  const chip = document.createElement('div');
+  chip.className = 'filter-chip';
+  chip.innerHTML = `<span>${escapeHtml(label)}</span><button title="Remove filter">&times;</button>`;
+  chip.querySelector('button').onclick = onRemove;
+  return chip;
+}
+
+function clearAllFilters() {
+  activePerson = null;
+  activeTag = null;
+  activeFolder = null;
+  activeYearMonth = null;
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClearBtn').style.display = 'none';
+  renderFolderTree();
+  renderRightFilterPanel();
+  updateView();
+}
+
+// --- Search ---
+function handleSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  document.getElementById('searchClearBtn').style.display = searchQuery ? 'block' : 'none';
+  updateView();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  handleSearch('');
+}
+
+function renderEmptyState(container) {
+  const activeList = [];
+  if (activePerson) activeList.push(`Person: ${activePerson}`);
+  if (activeTag) activeList.push(`Tag: ${activeTag}`);
+  if (activeFolder) activeList.push(`Folder: ${activeFolder}`);
+  if (activeYearMonth) activeList.push(`Date: ${activeYearMonth}`);
+  if (searchQuery) activeList.push(`Search: "${searchQuery}"`);
+
+  const filterNote = activeList.length > 0
+    ? `<p style="color: #93c5fd; margin-bottom: 14px;">Active filters hiding other items: <strong>${escapeHtml(activeList.join(' • '))}</strong></p>`
+    : `<p style="margin-bottom: 14px;">No items matched your current view.</p>`;
+
+  container.innerHTML = `
+    <div class="empty-state">
+      <div style="font-size: 2.2rem; margin-bottom: 10px;">🔍</div>
+      <h3 style="color: #fff; margin-bottom: 8px;">No matching photos or videos</h3>
+      ${filterNote}
+      <button class="clear-all-link" style="font-size: 0.9rem; padding: 8px 18px;" onclick="clearAllFilters()">✕ Clear All Filters</button>
+    </div>
+  `;
+}
+
+// --- LIGHTBOX (SHADOWBOX) WITH SCROLL-ZOOM AND DRAG-PAN ---
+function openLightbox(item) {
+  const lb = document.getElementById('lightbox');
+  const content = document.getElementById('lbContent');
+  const title = document.getElementById('lbTitle');
+  const dateEl = document.getElementById('lbDate');
+  const folderEl = document.getElementById('lbFolder');
+  const indexEl = document.getElementById('lbIndex');
+
+  resetZoom();
+
+  const mediaSrc = resolvePath(item);
+  const displayTitle = item.title || item.name;
+
+  title.textContent = displayTitle;
+  dateEl.textContent = item.date || 'Unknown Date';
+  
+  if (item.type === 'video' && item.duration) {
+    folderEl.textContent = `${item.folder} • ⏱️ ${item.duration}`;
+  } else {
+    folderEl.textContent = item.folder;
+  }
+  indexEl.textContent = `${currentLightboxIndex + 1} of ${displayedItems.length}`;
+
+  if (item.type === 'video') {
+    content.innerHTML = `<video src="${escapeHtml(mediaSrc)}" controls autoplay class="lb-media-target"></video>`;
+  } else {
+    content.innerHTML = `
+      <div class="lb-media-wrap" id="lbMediaWrap">
+        <img src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(item.name)}" class="lb-media-target" id="lbImage">
+        <div class="lb-faces-layer" id="lbFacesLayer"></div>
+      </div>
+    `;
+    const facesLayer = document.getElementById('lbFacesLayer');
+    if (facesLayer && item.faces) {
+      for (const [personName, coords] of Object.entries(item.faces)) {
+        if (!Array.isArray(coords) || coords.length < 4) continue;
+        const [cx, cy, rw, rh] = coords;
+        const box = document.createElement('div');
+        box.className = 'lb-face-box' + ((cy + rh / 2 > 0.85) ? ' label-top' : '');
+        box.dataset.person = personName;
+        box.style.left = `${((cx - rw / 2) * 100).toFixed(3)}%`;
+        box.style.top = `${((cy - rh / 2) * 100).toFixed(3)}%`;
+        box.style.width = `${(rw * 100).toFixed(3)}%`;
+        box.style.height = `${(rh * 100).toFixed(3)}%`;
+
+        const label = document.createElement('span');
+        label.className = 'lb-face-label';
+        label.textContent = personName;
+        box.appendChild(label);
+
+        box.addEventListener('mouseenter', () => setLightboxPersonHighlight(personName, true));
+        box.addEventListener('mouseleave', () => setLightboxPersonHighlight(personName, false));
+        facesLayer.appendChild(box);
+      }
+    }
+  }
+
+  // Description / Comment row
+  const commentRow = document.getElementById('lbCommentRow');
+  const commentText = document.getElementById('lbCommentText');
+  if (commentRow && commentText) {
+    if (item.comment) {
+      commentRow.style.display = 'flex';
+      commentText.textContent = item.comment;
+    } else {
+      commentRow.style.display = 'none';
+    }
+  }
+
+  // People badges
+  const peopleRow = document.getElementById('lbPeopleRow');
+  const peopleChips = document.getElementById('lbPeopleChips');
+  peopleChips.innerHTML = '';
+  if (item.people && item.people.length) {
+    peopleRow.style.display = 'flex';
+    item.people.forEach(p => {
+      const chip = document.createElement('span');
+      chip.className = 'lb-chip';
+      chip.dataset.person = p;
+      chip.textContent = p;
+      chip.addEventListener('mouseenter', () => setLightboxPersonHighlight(p, true));
+      chip.addEventListener('mouseleave', () => setLightboxPersonHighlight(p, false));
+      chip.onclick = () => {
+        closeLightbox();
+        activePerson = p;
+        switchNavTab('timeline');
+      };
+      peopleChips.appendChild(chip);
+    });
+  } else {
+    peopleRow.style.display = 'none';
+  }
+
+  // Tag badges
+  const tagsRow = document.getElementById('lbTagsRow');
+  const tagsChips = document.getElementById('lbTagsChips');
+  tagsChips.innerHTML = '';
+  if (item.tags && item.tags.length) {
+    tagsRow.style.display = 'flex';
+    item.tags.forEach(t => {
+      const chip = document.createElement('span');
+      chip.className = 'lb-chip';
+      chip.textContent = t;
+      chip.onclick = () => {
+        closeLightbox();
+        activeTag = t;
+        switchNavTab('timeline');
+      };
+      tagsChips.appendChild(chip);
+    });
+  } else {
+    tagsRow.style.display = 'none';
+  }
+
+  lb.style.display = 'flex';
+  lb.focus();
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lbContent').innerHTML = '';
+  lb.style.display = 'none';
+  currentLightboxIndex = -1;
+  resetZoom();
+}
+
+function navigateLightbox(step) {
+  if (currentLightboxIndex < 0 || displayedItems.length === 0) return;
+  resetZoom();
+  currentLightboxIndex = (currentLightboxIndex + step + displayedItems.length) % displayedItems.length;
+  openLightbox(displayedItems[currentLightboxIndex]);
+}
+
+function openOriginalMedia() {
+  if (currentLightboxIndex >= 0 && displayedItems[currentLightboxIndex]) {
+    window.open(resolvePath(displayedItems[currentLightboxIndex]), '_blank');
+  }
+}
+
+// --- Zoom & Pan Controller ---
+function resetZoom() {
+  zoomScale = 1.0;
+  panX = 0;
+  panY = 0;
+  isPanning = false;
+  applyImageTransform();
+  updateZoomUI();
+}
+
+function setLightboxPersonHighlight(personName, active) {
+  document.querySelectorAll('#lbFacesLayer .lb-face-box').forEach(box => {
+    if (box.dataset.person === personName) {
+      box.classList.toggle('active', active);
+    }
+  });
+  document.querySelectorAll('#lbPeopleChips .lb-chip').forEach(chip => {
+    if (chip.dataset.person === personName) {
+      chip.classList.toggle('active-hover', active);
+    }
+  });
+}
+
+function applyImageTransform(isLiveDragging = false) {
+  const target = document.getElementById('lbMediaWrap') || document.getElementById('lbImage');
+  if (!target) return;
+
+  if (isLiveDragging) {
+    target.classList.add('dragging');
+  } else {
+    target.classList.remove('dragging');
+  }
+
+  target.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+  target.classList.toggle('draggable', zoomScale > 1.0);
+}
+
+function updateZoomUI() {
+  const badge = document.getElementById('lbZoomBadge');
+  const resetBtn = document.getElementById('lbResetZoomBtn');
+  if (zoomScale > 1.05) {
+    badge.textContent = `${Math.round(zoomScale * 100)}%`;
+    badge.style.display = 'inline-block';
+    resetBtn.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+    resetBtn.style.display = 'none';
+  }
+}
+
+let mouseDownTarget = null;
+let mouseDownPos = { x: 0, y: 0 };
+
+function setupZoomAndPan() {
+  const body = document.getElementById('lbBody');
+  const lb = document.getElementById('lightbox');
+
+  // Track mousedown position to distinguish drag from click
+  lb.addEventListener('mousedown', (e) => {
+    mouseDownTarget = e.target;
+    mouseDownPos = { x: e.clientX, y: e.clientY };
+  });
+
+  // Click outside image/video closes the lightbox
+  lb.addEventListener('click', (e) => {
+    // Never close if clicked on any UI control, nav arrow, header, footer, or floating pill
+    if (
+      e.target.closest('.lb-nav') ||
+      e.target.closest('.lb-header') ||
+      e.target.closest('.lb-footer') ||
+      e.target.closest('.lb-floating-pill') ||
+      e.target.closest('.lb-btn') ||
+      e.target.closest('.lb-chip') ||
+      e.target.closest('.lb-footer-collapse-btn')
+    ) {
+      return;
+    }
+
+    // Never close if mousedown started inside a control or button
+    if (
+      mouseDownTarget && (
+        mouseDownTarget.closest('.lb-nav') ||
+        mouseDownTarget.closest('.lb-header') ||
+        mouseDownTarget.closest('.lb-footer') ||
+        mouseDownTarget.closest('.lb-floating-pill') ||
+        mouseDownTarget.closest('.lb-btn') ||
+        mouseDownTarget.closest('.lb-chip')
+      )
+    ) {
+      return;
+    }
+
+    // Ignore clicks directly on the image, face overlay, or video player
+    if (e.target.id === 'lbImage' || e.target.tagName === 'VIDEO' || e.target.closest('.lb-face-box')) {
+      return;
+    }
+
+    // If mouse moved less than 6px, it was a click, not a pan/drag gesture
+    const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+    if (dist < 6) {
+      closeLightbox();
+    }
+  });
+
+  // Mouse wheel to zoom in / out
+  body.addEventListener('wheel', (e) => {
+    const img = document.getElementById('lbImage');
+    if (!img) return;
+    e.preventDefault();
+
+    const zoomFactor = e.deltaY < 0 ? 1.25 : 0.8;
+    let newScale = zoomScale * zoomFactor;
+
+    if (newScale <= 1.05) {
+      newScale = 1.0;
+      panX = 0;
+      panY = 0;
+    } else {
+      newScale = Math.min(newScale, 6.0); // max 6x zoom
+    }
+
+    zoomScale = newScale;
+    applyImageTransform();
+    updateZoomUI();
+  }, { passive: false });
+
+  // Mouse drag to pan when zoomed
+  body.addEventListener('mousedown', (e) => {
+    const img = document.getElementById('lbImage');
+    if (!img || zoomScale <= 1.0) return;
+    if (e.target.closest('.lb-nav') || e.target.closest('.lb-header') || e.target.closest('.lb-footer')) return;
+
+    isPanning = true;
+    startPanX = e.clientX - panX;
+    startPanY = e.clientY - panY;
+    applyImageTransform(true);
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - startPanX;
+    panY = e.clientY - startPanY;
+    applyImageTransform(true);
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isPanning) {
+      isPanning = false;
+      applyImageTransform(false);
+    }
+  });
+
+  // Double click on image to toggle 100% / 250% zoom
+  body.addEventListener('dblclick', (e) => {
+    const img = document.getElementById('lbImage');
+    if (!img) return;
+    if (e.target.closest('.lb-nav') || e.target.closest('.lb-header') || e.target.closest('.lb-footer')) return;
+
+    // Only toggle zoom if double-clicked on image (or face box overlay)
+    if (e.target.id === 'lbImage' || e.target.closest('.lb-face-box')) {
+      if (zoomScale > 1.05) {
+        resetZoom();
+      } else {
+        zoomScale = 2.5;
+        panX = 0;
+        panY = 0;
+        applyImageTransform();
+        updateZoomUI();
+      }
+    }
+  });
+}
+
+// --- Details Panel Expand / Collapse ---
+let detailsVisible = true;
+function toggleDetails(e) {
+  if (e && e.stopPropagation) {
+    e.stopPropagation();
+  }
+
+  detailsVisible = !detailsVisible;
+  const footer = document.getElementById('lbFooter');
+  const pill = document.getElementById('lbFloatingDetailsPill');
+  const infoBtn = document.getElementById('lbInfoBtn');
+  const collapseBtn = document.getElementById('lbFooterCollapseBtn');
+
+  if (footer) footer.classList.toggle('collapsed', !detailsVisible);
+  if (pill) pill.style.display = detailsVisible ? 'none' : 'inline-flex';
+  if (infoBtn) infoBtn.classList.toggle('active', detailsVisible);
+  if (collapseBtn) {
+    const textSpan = collapseBtn.querySelector('span');
+    if (textSpan) {
+      textSpan.textContent = detailsVisible ? 'Hide Details ▼' : 'Show Details ▲';
+    } else {
+      collapseBtn.textContent = detailsVisible ? 'Hide Details ▼' : 'Show Details ▲';
+    }
+  }
+}
+
+// --- Browser Fullscreen Toggle ---
+function toggleFullscreen(e) {
+  if (e && e.stopPropagation) {
+    e.stopPropagation();
+  }
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log("Fullscreen request failed:", err);
+    });
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const isFull = !!document.fullscreenElement;
+  const lbBtn = document.getElementById('lbFullscreenBtn');
+  const appBtn = document.getElementById('btnAppFullscreen');
+  if (lbBtn) {
+    lbBtn.textContent = isFull ? '🗗' : '⛶';
+    lbBtn.title = isFull ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)';
+  }
+  if (appBtn) {
+    appBtn.innerHTML = isFull ? '<span>🗗 Exit Full</span>' : '<span>⛶ Fullscreen</span>';
+  }
+});
+
+function setupKeyboard() {
+  window.addEventListener('keydown', (e) => {
+    const cropModal = document.getElementById('avatarCropModal');
+    if (cropModal && cropModal.style.display === 'flex') {
+      if (e.key === 'Escape') {
+        closeCropModal();
+        return;
+      }
+    }
+
+    const avModal = document.getElementById('avatarPickerModal');
+    if (avModal && avModal.style.display === 'flex') {
+      if (e.key === 'Escape') {
+        closeAvatarModal();
+        return;
+      }
+    }
+
+    const lb = document.getElementById('lightbox');
+    if (lb.style.display === 'flex') {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      if (e.key === 'i' || e.key === 'I') {
+        e.preventDefault();
+        toggleDetails();
+      }
+    }
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

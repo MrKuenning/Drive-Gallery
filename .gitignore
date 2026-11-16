@@ -1,0 +1,55 @@
+.DS_Store
+test flas drive
+
+# Example Drive media & generated gallery cache
+Drive/Your Media Folders/*
+Drive/Any Quantity Any Name/*
+Drive/.gallery-app/thumbs/*
+Drive/.gallery-app/avatars/*
+
+Drive/.gallery-app/gallery_data.js
+Drive/.gallery-app/Test-Flash-Drive/
+
+# Compiled executables (distributed via GitHub Releases)
+drive/.gallery-app/*.exe
+
+
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+#configuration files
+config.json
+
+#database files
+lora_manager.db
+*.db
+*.db-wal
+*.db-shm
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Concept.txt
