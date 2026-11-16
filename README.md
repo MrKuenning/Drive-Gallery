@@ -16,17 +16,12 @@ A standalone, portable photo and home video gallery designed for thumbdrives and
 
 ---
 
-## 🚀 Quick Start (How to Launch)
+## 🚀 Quick Start (2 Steps — Zero Setup)
 
-Simply plug in the thumbdrive and launch the gallery launcher for your system:
+1. **Build your gallery:** Download **`Create.Gallery.exe`** (or **`Create.Gallery.py`**) from **[GitHub Releases](../../releases)**, drop it in the root of your thumbdrive/folder, and run it.
+2. **Open anytime:** Double-click **`Open Gallery (Windows).bat`** or **`Open Gallery (Mac).command`** in the drive root (or open `.gallery-app/Open Gallery.html` in any browser).
 
-| Platform | How to Launch |
-| :--- | :--- |
-| **Windows** | Double-click **`Start Gallery (Windows).bat`** in the drive root |
-| **macOS** | Double-click **`Start Gallery (Mac).command`** in the drive root |
-| **Linux / Direct** | Open **`.gallery-app/Open Gallery.html`** in any web browser |
-
-*No internet connection, web server, or software installation required!*
+*Added or moved photos later? Just run **`.gallery-app/Update Gallery.bat`** to refresh the gallery — no internet connection, web server, or installation required!*
 
 ---
 
@@ -109,7 +104,9 @@ If you add new photos or videos, rename folders, or drop custom portraits into `
 
 ## ⚡ Creating a Drive Gallery on a New USB Drive (1-File Setup)
 
-You can turn **any** USB thumbdrive or media folder into a Drive Gallery by downloading a single file from **[GitHub Releases](../../releases)** and dropping it onto the drive root:
+It takes **one file and one click** to turn any thumbdrive or media folder into a complete Drive Gallery:
+- **First-time setup:** Drop **`Create.Gallery.exe`** (or **`Create.Gallery.py`**) from **[GitHub Releases](../../releases)** into the drive root and run it.
+- **Future updates:** Whenever you add, remove, or reorganize photos/videos, just run **`Update Gallery.bat`** inside `.gallery-app/` — everything else stays tucked away cleanly.
 
 ### Option A: `Create.Gallery.exe` (Windows — No Python Needed)
 1. Download **`Create.Gallery.exe`** from **[GitHub Releases](../../releases)** and copy it to the root of your drive.
