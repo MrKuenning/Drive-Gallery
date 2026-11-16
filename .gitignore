@@ -9,6 +9,7 @@ DRIVE_ROOT/.gallery-app/avatars/*
 DRIVE_ROOT/Test Media
 DRIVE_ROOT/.gallery-app/gallery_data.js
 Releases
+Releases2
 
 # Compiled executables (distributed via GitHub Releases)
 DRIVE_ROOT/.gallery-app/*.exe
