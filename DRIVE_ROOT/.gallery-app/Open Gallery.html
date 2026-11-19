@@ -58,7 +58,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex: 1;
+      flex: 0 1 auto;
+    }
+    .header-search {
+      flex: 0 1 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
     }
     .header-right {
       display: flex;
@@ -143,9 +150,9 @@
 
     /* Search Box */
     .search-box {
-      flex: 1;
-      max-width: 280px;
-      min-width: 150px;
+      width: 100%;
+      max-width: 380px;
+      min-width: 180px;
       position: relative;
     }
     .search-box input {
@@ -153,9 +160,9 @@
       background: var(--bg);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 6px 12px 6px 32px;
-      border-radius: 18px;
-      font-size: 0.85rem;
+      padding: 7px 32px 7px 36px;
+      border-radius: 20px;
+      font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
@@ -165,11 +172,11 @@
     }
     .search-box svg {
       position: absolute;
-      left: 10px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       fill: var(--text-muted);
     }
     .search-clear {
@@ -810,6 +817,24 @@
       border-radius: 10px;
       font-size: 0.7rem;
       color: #cbd5e1;
+    }
+    .card-ai-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      background: rgba(88, 28, 135, 0.88);
+      border: 1px solid rgba(192, 132, 252, 0.45);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      line-height: 1;
+      color: #f3e8ff;
+      pointer-events: none;
     }
 
     /* Timeline Section Headers in Main Stream */
@@ -1678,7 +1703,7 @@
   <div class="header-left">
     <div class="brand" onclick="switchNavTab('timeline'); clearAllFilters();">
       <img src="assets/icon.png" alt="Drive Gallery" class="brand-icon">
-      <span class="brand-version" title="Gallery Build Version">v1.4</span>
+      <span class="brand-version" title="Gallery Build Version">v1.6</span>
     </div>
 
     <!-- The 5 Main Full Views -->
@@ -1726,16 +1751,25 @@
         <span>Size</span>
         <input type="range" id="sizeSlider" min="130" max="600" value="220" oninput="handleSizeChange(this.value)">
       </div>
+
+      <!-- People Tagged Filter -->
+      <button id="filterPeopleOnlyBtn" class="btn-icon" title="Show only photos with people tagged" onclick="togglePeopleOnlyFilter()">
+        <span>👤 Tagged Only</span>
+      </button>
     </div>
   </div>
 
-  <!-- RIGHT: Search, Filter Toggle, Fullscreen -->
-  <div class="header-right">
+  <!-- CENTER-RIGHT: Search -->
+  <div class="header-search">
     <div class="search-box">
       <svg viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5Z"/></svg>
       <input type="text" id="searchInput" placeholder="Search people, tags, files..." oninput="handleSearch(this.value)">
       <button id="searchClearBtn" class="search-clear" onclick="clearSearch()">&times;</button>
     </div>
+  </div>
+
+  <!-- RIGHT: Filter Toggle, Fullscreen -->
+  <div class="header-right">
 
     <!-- Toggle Right Filter Panel (for Timeline and Folders view) -->
     <button id="toggleFilterPanelBtn" class="btn-icon" title="Toggle People & Tags filter panel" onclick="toggleRightFilterPanel()">
@@ -1840,6 +1874,10 @@
         <span>Hide Details ▼</span>
       </button>
     </div>
+    <div id="lbAiEditRow" class="lb-meta-row" style="display: none; color: #e9d5ff; font-size: 0.82rem;">
+      <span style="background: rgba(88, 28, 135, 0.75); border: 1px solid rgba(192, 132, 252, 0.5); padding: 2px 9px; border-radius: 12px; font-weight: 600;">✨ AI Edit</span>
+      <span>This image has been restored or edited using AI.</span>
+    </div>
     <div id="lbCommentRow" class="lb-meta-row" style="display: none; color: #cbd5e1; font-style: italic; font-size: 0.84rem;">
       <span id="lbCommentText"></span>
     </div>
@@ -1914,7 +1952,7 @@
 
 <script>
 // --- State ---
-const APP_VERSION = "1.4";
+const APP_VERSION = "1.6";
 const RAW_DATA = window.GALLERY_DATA || { items: [], people: [], tags: [], folders: [] };
 let pathOverrides = JSON.parse(localStorage.getItem("gallery_path_overrides") || "{}");
 let customAvatars = JSON.parse(localStorage.getItem("gallery_custom_avatars") || "{}");
@@ -1931,6 +1969,7 @@ let activePerson = null;     // e.g. "Brady"
 let activeTag = null;        // e.g. "family"
 let activeFolder = null;     // e.g. "Example Images/Years/2004"
 let activeYearMonth = null;  // e.g. "2004-12"
+let onlyWithPeople = false;
 let searchQuery = "";
 
 // Right Filter Sidebar State (on Timeline and Folders)
@@ -1941,7 +1980,8 @@ let rightTab = 'people'; // 'people' or 'tags'
 let cropMode = localStorage.getItem("gallery_crop_mode") || "mosaic"; // 'mosaic' or 'square'
 if (cropMode === "full") cropMode = "mosaic";
 let cardSize = parseInt(localStorage.getItem("gallery_card_size") || "220", 10);
-let peopleSort = localStorage.getItem("gallery_people_sort") || "amount"; // 'amount' or 'name'
+let peopleSort = localStorage.getItem("gallery_people_sort") || "amount"; // 'amount', 'first', or 'last'
+if (peopleSort === "name") peopleSort = "first";
 let tagsSort = localStorage.getItem("gallery_tags_sort") || "amount";     // 'amount' or 'name'
 
 let displayedItems = [];
@@ -2444,14 +2484,63 @@ function switchRightTab(tab) {
   renderRightFilterPanel();
 }
 
+function getLastNameInfo(fullName) {
+  const parts = (fullName || "").trim().split(/\s+/);
+  if (parts.length > 1) {
+    const last = parts[parts.length - 1];
+    return { key: last.toLowerCase(), label: last, hasLast: true };
+  }
+  return { key: "\uffff" + (parts[0] || "").toLowerCase(), label: "Other", hasLast: false };
+}
+
+function getSortedPeople() {
+  return [...RAW_DATA.people].sort((a, b) => {
+    if (peopleSort === 'first') {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    } else if (peopleSort === 'last') {
+      const la = getLastNameInfo(a.name);
+      const lb = getLastNameInfo(b.name);
+      if (la.hasLast !== lb.hasLast) return la.hasLast ? -1 : 1;
+      const cmp = la.label.localeCompare(lb.label, undefined, { sensitivity: 'base' });
+      return cmp !== 0 ? cmp : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    } else {
+      const diff = b.count - a.count;
+      return diff !== 0 ? diff : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+  });
+}
+
+function getSortedTags() {
+  return [...RAW_DATA.tags].sort((a, b) => {
+    if (tagsSort === 'name') {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+    const diff = b.count - a.count;
+    return diff !== 0 ? diff : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+  });
+}
+
 function renderRightFilterPanel() {
   const container = document.getElementById('rightFilterContent');
   container.innerHTML = '';
 
+  const sortRow = document.createElement('div');
+  sortRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 2px 10px; margin-bottom: 8px; border-bottom: 1px solid var(--border);';
+
   if (rightTab === 'people') {
+    sortRow.innerHTML = `
+      <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: 600;">Sort</span>
+      <div class="toggle-group" title="Sort People">
+        <button class="toggle-opt ${peopleSort === 'amount' ? 'active' : ''}" style="font-size: 0.72rem; padding: 3px 7px;" onclick="setPeopleSort('amount')">📊 Count</button>
+        <button class="toggle-opt ${peopleSort === 'first' ? 'active' : ''}" style="font-size: 0.72rem; padding: 3px 7px;" onclick="setPeopleSort('first')">🔤 First</button>
+        <button class="toggle-opt ${peopleSort === 'last' ? 'active' : ''}" style="font-size: 0.72rem; padding: 3px 7px;" onclick="setPeopleSort('last')">🔤 Last</button>
+      </div>
+    `;
+    container.appendChild(sortRow);
+
     const list = document.createElement('div');
     list.className = 'side-people-list';
-    RAW_DATA.people.forEach(p => {
+    getSortedPeople().forEach(p => {
       const row = document.createElement('div');
       row.className = 'side-person-row' + (activePerson === p.name ? ' selected' : '');
 
@@ -2472,9 +2561,18 @@ function renderRightFilterPanel() {
     });
     container.appendChild(list);
   } else {
+    sortRow.innerHTML = `
+      <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: 600;">Sort</span>
+      <div class="toggle-group" title="Sort Tags">
+        <button class="toggle-opt ${tagsSort === 'amount' ? 'active' : ''}" style="font-size: 0.72rem; padding: 3px 7px;" onclick="setTagsSort('amount')">📊 Count</button>
+        <button class="toggle-opt ${tagsSort === 'name' ? 'active' : ''}" style="font-size: 0.72rem; padding: 3px 7px;" onclick="setTagsSort('name')">🔤 Name</button>
+      </div>
+    `;
+    container.appendChild(sortRow);
+
     const wrap = document.createElement('div');
     wrap.className = 'side-tags-wrap';
-    RAW_DATA.tags.forEach(t => {
+    getSortedTags().forEach(t => {
       const el = document.createElement('span');
       el.className = 'side-tag' + (activeTag === t.name ? ' selected' : '');
       el.innerHTML = `${escapeHtml(t.name)} <span>(${t.count})</span>`;
@@ -3021,6 +3119,9 @@ function getFilteredItems() {
     if (activePerson) {
       if (!item.people || !item.people.includes(activePerson)) return false;
     }
+    if (onlyWithPeople) {
+      if (!item.people || item.people.length === 0) return false;
+    }
     if (activeTag) {
       if (!item.tags || !item.tags.includes(activeTag)) return false;
     }
@@ -3194,7 +3295,8 @@ function renderFoldersView() {
 function setPeopleSort(sort) {
   peopleSort = sort;
   localStorage.setItem("gallery_people_sort", sort);
-  renderPeopleFullPage();
+  if (currentNavTab === 'people') renderPeopleFullPage();
+  if (rightFilterOpen) renderRightFilterPanel();
 }
 
 function renderPeopleFullPage() {
@@ -3215,25 +3317,16 @@ function renderPeopleFullPage() {
         <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Sort:</span>
         <div class="toggle-group" title="Sort People">
           <button class="toggle-opt ${peopleSort === 'amount' ? 'active' : ''}" onclick="setPeopleSort('amount')">📊 By Amount</button>
-          <button class="toggle-opt ${peopleSort === 'name' ? 'active' : ''}" onclick="setPeopleSort('name')">🔤 By Name</button>
+          <button class="toggle-opt ${peopleSort === 'first' ? 'active' : ''}" onclick="setPeopleSort('first')">🔤 First Name</button>
+          <button class="toggle-opt ${peopleSort === 'last' ? 'active' : ''}" onclick="setPeopleSort('last')">🔤 Last Name</button>
         </div>
       </div>
     </div>
   `;
 
-  const grid = document.createElement('div');
-  grid.className = 'people-full-grid';
+  const sortedPeople = getSortedPeople();
 
-  const sortedPeople = [...RAW_DATA.people].sort((a, b) => {
-    if (peopleSort === 'name') {
-      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    } else {
-      const diff = b.count - a.count;
-      return diff !== 0 ? diff : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    }
-  });
-
-  sortedPeople.forEach(p => {
+  const createPersonFullCard = (p) => {
     const card = document.createElement('div');
     card.className = 'person-full-card';
 
@@ -3256,11 +3349,43 @@ function renderPeopleFullPage() {
       activePerson = p.name;
       switchNavTab('timeline');
     };
+    return card;
+  };
 
-    grid.appendChild(card);
-  });
+  if (peopleSort === 'last') {
+    const familyGroups = new Map();
+    sortedPeople.forEach(p => {
+      const info = getLastNameInfo(p.name);
+      const groupKey = info.hasLast ? info.key : "__other__";
+      const groupLabel = info.hasLast ? info.label : "Other (Single Name)";
+      if (!familyGroups.has(groupKey)) {
+        familyGroups.set(groupKey, { label: groupLabel, members: [] });
+      }
+      familyGroups.get(groupKey).members.push(p);
+    });
 
-  wrap.appendChild(grid);
+    familyGroups.forEach(group => {
+      const sec = document.createElement('div');
+      sec.className = 'timeline-section';
+
+      const header = document.createElement('div');
+      header.className = 'timeline-sec-header';
+      header.innerHTML = `<span>${escapeHtml(group.label)}</span> <span class="timeline-sec-count">(${group.members.length})</span>`;
+      sec.appendChild(header);
+
+      const groupGrid = document.createElement('div');
+      groupGrid.className = 'people-full-grid';
+      group.members.forEach(p => groupGrid.appendChild(createPersonFullCard(p)));
+      sec.appendChild(groupGrid);
+      wrap.appendChild(sec);
+    });
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'people-full-grid';
+    sortedPeople.forEach(p => grid.appendChild(createPersonFullCard(p)));
+    wrap.appendChild(grid);
+  }
+
   container.appendChild(wrap);
 }
 
@@ -3268,7 +3393,8 @@ function renderPeopleFullPage() {
 function setTagsSort(sort) {
   tagsSort = sort;
   localStorage.setItem("gallery_tags_sort", sort);
-  renderTagsFullPage();
+  if (currentNavTab === 'tags') renderTagsFullPage();
+  if (rightFilterOpen) renderRightFilterPanel();
 }
 
 function renderTagsFullPage() {
@@ -3340,6 +3466,10 @@ function renderTagsFullPage() {
 }
 
 // --- Media Card Component ---
+function hasAIEditTag(item) {
+  return Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase() === 'aiedit');
+}
+
 function createMediaCard(item) {
   const card = document.createElement('div');
   card.className = 'media-card' + (item.type === 'video' ? ' is-video' : '');
@@ -3365,6 +3495,7 @@ function createMediaCard(item) {
       </div>
     ` : ''}
     ${item.people && item.people.length ? `<span class="card-people-badge">👥 ${item.people.length}</span>` : ''}
+    ${hasAIEditTag(item) ? `<span class="card-ai-badge" title="AI Restored / Edited (AIEdit)">✨</span>` : ''}
   `;
 
   if (!hasDims) {
@@ -3387,18 +3518,33 @@ function createMediaCard(item) {
 }
 
 // --- Filter Bar Chips ---
+function togglePeopleOnlyFilter() {
+  onlyWithPeople = !onlyWithPeople;
+  const btn = document.getElementById('filterPeopleOnlyBtn');
+  if (btn) btn.classList.toggle('active', onlyWithPeople);
+  updateView();
+}
+
 function renderFilterBar() {
   const bar = document.getElementById('filterBar');
   const chips = document.getElementById('filterChips');
   chips.innerHTML = '';
 
-  const hasFilter = activePerson || activeTag || activeFolder || activeYearMonth || searchQuery;
+  const hasFilter = activePerson || onlyWithPeople || activeTag || activeFolder || activeYearMonth || searchQuery;
   if (!hasFilter) {
     bar.classList.remove('visible');
     return;
   }
   bar.classList.add('visible');
 
+  if (onlyWithPeople) {
+    chips.appendChild(createChip('👤 Has People Tagged', () => {
+      onlyWithPeople = false;
+      const btn = document.getElementById('filterPeopleOnlyBtn');
+      if (btn) btn.classList.remove('active');
+      updateView();
+    }));
+  }
   if (activePerson) {
     chips.appendChild(createChip(`👤 Person: ${activePerson}`, () => {
       activePerson = null;
@@ -3441,6 +3587,9 @@ function createChip(label, onRemove) {
 
 function clearAllFilters() {
   activePerson = null;
+  onlyWithPeople = false;
+  const peopleBtn = document.getElementById('filterPeopleOnlyBtn');
+  if (peopleBtn) peopleBtn.classList.remove('active');
   activeTag = null;
   activeFolder = null;
   activeYearMonth = null;
@@ -3542,6 +3691,12 @@ function openLightbox(item) {
         facesLayer.appendChild(box);
       }
     }
+  }
+
+  // AI Edit notice row
+  const aiEditRow = document.getElementById('lbAiEditRow');
+  if (aiEditRow) {
+    aiEditRow.style.display = hasAIEditTag(item) ? 'flex' : 'none';
   }
 
   // Description / Comment row

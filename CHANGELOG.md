@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6] - 2026-11-19
+
+### Added
+* **People First/Last Name Sorting & Family Grouping:**
+  * Replaced generic name sorting on the People screen with **First Name** and **Last Name** options.
+  * When sorted by **Last Name**, people are automatically grouped into sections by family last name (with single-word names grouped under **Other (Single Name)**).
+* **Filter Sidebar Sorting:**
+  * Added compact sort controls to the right filter sidebar for both **People** (`Count | First | Last`) and **Tags** (`Count | Name`), synced with the full People/Tags pages.
+* **"Tagged Only" People Filter:**
+  * Added a **👤 Tagged Only** toggle button in the header to filter the gallery down to only photos/videos with people tagged.
+* **`AIEdit` Thumbnail Badge & Lightbox Notice:**
+  * Photos tagged `AIEdit` now display a compact circular `✨` badge on the thumbnail and an **AI Edit** notice in the lightbox details panel.
+* **Pre-Scan Count & Live Progress Bar:**
+  * `build_gallery.py` now counts total photos and videos to scan before confirmation and displays a 44-character progress bar (`[...] XX% (n/total)`) while indexing.
+
+### Changed & Improved
+* **Evenly Distributed Header & Larger Search Box:** Enlarged the search bar (up to `380px`) and centered it between the middle controls and the right-hand Filters/Fullscreen buttons.
+* **Friendlier Indexer UX & Large-Image Support:**
+  * Softened the missing library prompt into a friendly **HELPER LIBRARIES SETUP** dialog.
+  * Updated update mode prompt to `"Are you ready to update the gallery [Y/n]:"`, added a color-coded summary box (photos, videos, people, tags, folders), and kept the window open on completion.
+  * Simplified setup output to `[*] Initializing Drive Gallery structure...` and disabled Pillow's `MAX_IMAGE_PIXELS` limit so high-resolution panoramas and flatbed scans process without `DecompressionBombWarning`.
+
+---
+
+## [1.5] - 2026-11-18
+
+### Added
+* **Mosaic View (Justified Rows):**
+  * Added Google Photos-style justified rows layout (`Mosaic`) as the default gallery view, storing `w` and `h` dimensions in `gallery_data.js` for zero-jump rendering.
+  * Simplified the aspect toggle to **Square | Mosaic** (removed **Full** view) and increased the thumbnail size slider max to `600px`.
+* **Lightbox Two-Way Face Highlighting:**
+  * Hovering a person's face in the lightbox draws a box and name pill over their face while highlighting their chip at the bottom; hovering a person's chip at the bottom highlights their face in the photo.
+* **EXIF Library Check & Install Prompt:**
+  * Added startup check in `build_gallery.py` for `Pillow` and `pyexiv2`, prompting to install missing libraries via `pip` when running as Python source, plus a notice if `ffmpeg`/`ffprobe` is missing.
+
+### Changed & Fixed
+* **Full-Height Lightbox Side Navigation:** Replaced the small circular prev/next arrows with full-height edge click zones while keeping click-off-to-close on the backdrop.
+* **EXIF & Oldest Filesystem Date Fixes:** Fixed Pillow EXIF Sub-IFD (`0x8769`) lookup for `DateTimeOriginal` and updated the filesystem date fallback to use the oldest of modified (`st_mtime`) and created (`st_ctime`) timestamps.
+* **Header, People & Assets Cleanup:** Removed the redundant `Drive Gallery` header title text, removed the duplicate hover edit button on People cards, added `onerror` fallback to scanned avatars when `localStorage` overrides are stale, consolidated icons into `.gallery-app/assets/`, and made `build_gallery.py` remove itself from the drive root after first-run setup.
+
+---
+
 ## [2.3.0] - 2026-11-13
 
 ### Added
